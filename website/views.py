@@ -160,22 +160,30 @@ def connect():
     host = network.host
     username = network.username
     password = network.password
-    output = None
+
+
+    #user_input = request.form.get('command')
+    connection = ConnectHandler(host=host, port=22,
+                                username=username, password=password,
+                                device_type='cisco_ios')
+        
+    
+        
+    output = connection.send_command(f'sh ip int br', use_textfsm=True)
 
     if request.method == 'POST':
+        vlan_id = '20'
+        vlan_name = 'Orders'
 
-        user_input = request.form.get('command')
-        connection = ConnectHandler(host=host, port=22,
-                                        username=username, password=password,
-                                        device_type='cisco_ios')
-        
-        try:
-        
-            output = connection.send_command(f'{user_input}', use_textfsm=True)
+        config_commands = [
+            f'vlan {vlan_id}',
+            f'name {vlan_name}',
+            f'interface vlan {vlan_id}',
+            f'ip address 192.168.100.120 255.255.255.0'
+        ]
+        connection.send_config_set(config_commands)
+        connection.send_command('write memory')
 
-        except:
-            flash('Command traceback', category='error')
-
-
+        return redirect(url_for('views.connect'))
     
     return render_template('connect.html', user=current_user, network_name=network_name, host=host, username=username, password=password, output=output)
