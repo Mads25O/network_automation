@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Edit networks{% endblock %}
+{% block content %}
+<h1 align="center">Edit network</h1>
+<form method="POST">
+    <div class="mb-3">
+        <label for="network_name">Network name</label>
+        <input type="network_name" name="network_name" id="network_name" class="form-control" value="{{ network_name }}">
+    </div>
+    <div class="mb-3">
+        <label for="host">Hostname</label>
+        <input type="host" name="host" id="host" class="form-control" value="{{ host }}">
+    </div>
+    <div class="mb-3">
+        <label for="username">Username</label>
+        <input type="username" name="username" id="username" class="form-control" value="{{ username }}">
+    </div>
+    <div class="mb-3">
+        <label for="password">Password</label>
+        <input type="text" name="password" id="password" class="form-control" value="{{ password }}">
+    </div>
+    <button type="submit" class="btn btn-primary" name="submit_button">Save</button>
+    <button type="submit" class="btn btn-danger ms-2" name="submit_button" value="delete">Delete</button>
+</form>
+{% endblock %}

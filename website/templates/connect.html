@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Connect to network{% endblock %}
+{% block content %}
+
+<form action="" method="POST">
+    <button type="submit" class="btn btn-primary ms-2" name="submit_button" value="connect">Automatisering</button>
+</form>
+<div class="container mt-5" >
+    <form action="" method="POST">
+        <div class="mb-3">
+            <label for="command">Command</label>
+            <input type="command" name="command" id="command" class="form-control" placeholder="Command...">
+        </div>
+        <button type="submit" class="btn btn-primary ms-2" name="submit_button" value="connect">Send command</button>
+    </form>
+
+</div>
+
+{% if output != None %}
+    <p>{{ output }}</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,21 @@
+.alert {
+    border-radius: 0 !important;
+}
+
+.close-button {
+    height: 0.01rem;
+}
+
+textarea {
+    resize: none;
+    height: 250px;
+}
+
+.nav-link {
+    color: rgb(165, 165, 165);
+}
+
+.welcome:hover {
+    color: rgb(165, 165, 165);
+    
+}
