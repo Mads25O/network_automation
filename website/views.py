@@ -113,6 +113,7 @@ def manage_networks():
 
             network_id = request.form['access_button']
             session["network_id"] = network_id
+            session["extended_access"] = 'False'
 
             return redirect(url_for('views.access_list'))
 
@@ -220,6 +221,8 @@ def access_list():
     any_or_host = None
     protocols = None
     custom_protocols = None
+    destination = None
+    source = None
 
     if session["extended_access"] == 'False':
         extended = False
@@ -231,7 +234,7 @@ def access_list():
         extended = False
 
     command_config = []
-    dropdown_list = []
+    packet_list = []
 
 
     if request.method == 'POST':
@@ -249,8 +252,6 @@ def access_list():
         if request.form.get('save_button'):
 
             access_list_name = request.form.get('access_list_name')
-            action = request.form.get('action')
-            type = request.form.get('type')
             ip_or_port = request.form.get('ip_or_port')
 
             permit_or_deny = request.form.get('permit_or_deny')
@@ -259,28 +260,45 @@ def access_list():
             protocols = request.form.get('protocols')
             custom_protocols = request.form.get('custom_protocols')
             hostname = request.form.get('hostname')
-            source_address = request.form.get('source_address')
+            source = request.form.get('source')
+            destination = request.form.get('destination')
 
-            print(permit_or_deny)
+            packet = request.form.get('packet')
+            host_pis = request.form.get('host')
+            port = request.form.get('port')
 
-            if custom_protocols != '':
-                pass
 
-            if source_address != '':
-                pass
+            #print(access_list_name, permit_or_deny, any_or_host, protocols, custom_protocols, hostname, source)
+             
+            
+            if session['extended_access'] == 'True':
+                command_config.append(f'ip access-list extended {access_list_name}')
+                command_config.append(f'{permit_or_deny}')
 
+                if custom_protocols != '':
+                    command_config.append(f'{custom_protocols} {source} {destination}')
+                else:
+                    command_config.append(f'{protocols} {source} {destination}')
+                
+
+                if host_pis != '':
+                    command_config.append(f'{host_pis}')
+                elif port != '':
+                    command_config.append(f'{port}')
+                else:
+                    command_config.append(f'{packet}')
+                
+                print(command_config)
             
 
-            
+            if session['extended_access'] == 'False':
 
-            #print(access_list_name, ip_or_port, action, type)
+                command_config.append(f'ip access-list standard {access_list_name}')
 
-            command_config.append(f'ip access-list standard {access_list_name}')
-
-            if action == 'permit':
-                command_config.append(f'permit {ip_or_port}')
-            else:
-                command_config.append(f'deny {ip_or_port}')
+                if permit_or_deny == 'permit':
+                    command_config.append(f'permit {ip_or_port}')
+                else:
+                    command_config.append(f'deny {ip_or_port}')
             
             '''if type == 'ip':
                 command_config.append('ip')
@@ -289,7 +307,7 @@ def access_list():
 
             
 
-            try:
+            '''try:
                 connection = ConnectHandler(host=host, port=22,
                                             username=username, password=password,
                                             device_type='cisco_ios')
@@ -299,15 +317,12 @@ def access_list():
                 #print(output)
 
             except:
-                pass
+                pass'''
         
         if request.form.get('next_button'):
-
             
-
             access_list_name = request.form.get('access_list_name')
             action = request.form.get('action')
-            type = request.form.get('type')
             ip_or_port = request.form.get('ip_or_port')
 
             permit_or_deny = request.form.get('permit_or_deny')
@@ -316,15 +331,17 @@ def access_list():
             protocols = request.form.get('protocols')
             custom_protocols = request.form.get('custom_protocols')
             hostname = request.form.get('hostname')
-            source_address = request.form.get('source_address')
-
+            source = request.form.get('source')
             destination = request.form.get('destination')
+            
 
-            if destination == 'any':
-                dropdown_list = ['dscp', 'eq', 'fragments', 'gt', 'log', 'log-input', 'lt', 'neq', 'option', 'precedence', 'range', 'time-range', 'tos']
+            
+
+            if destination == 'any_dest':
+                packet_list = ['dscp', 'eq', 'fragments', 'gt', 'log', 'log-input', 'lt', 'neq', 'option', 'precedence', 'range', 'time-range', 'tos']
             
             elif destination == 'host':
-                dropdown_list = []
+                packet_list = []
         
 
         
@@ -338,13 +355,15 @@ def access_list():
                            username=username,
                            password=password,
                            extended=extended,
-                           access_list_name = access_list_name,
+                           access_list_name=access_list_name,
                            hostname=hostname,
                            permit_or_deny=permit_or_deny,
                            protocols=protocols,
+                           source=source,
+                           destination=destination,
                            custom_protocols=custom_protocols,
                            any_or_host=any_or_host,
-                           dropdown_list=dropdown_list)
+                           packet_list=packet_list)
 
 @views.route('/submit', methods=['GET', 'POST'])
 @login_required

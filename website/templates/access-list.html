@@ -11,7 +11,7 @@
         <br>
 
         <label for="access_list_name">Access List Name</label>
-        <input type="text" name="access_list_name" id="access_list_name" class="form-control" value={% if access_list_name != None %} "{{ access_list_name }}" {% else %} ""{% endif %}>
+        <input type="text" name="access_list_name" id="access_list_name" class="form-control" value={% if access_list_name != None %} "{{ access_list_name }}" {% else %} "" {% endif %}>
         <br>
         
     
@@ -65,13 +65,13 @@
             </select>
             <br>
             <label for="custom_protocols">Tast selv protokol (0-255)</label>
-            <input type="text" name="custom_protocols" id="custom_protocols" class="form-control" value="">
+            <input type="text" name="custom_protocols" id="custom_protocols" class="form-control" value={% if custom_protocols != None %} "{{ custom_protocols }}" {% else %} "" {% endif %}>
             <br>
             <label for="source">Source</label>
             <select class="form-select" aria-label="Default select example" name="source">
                 <option {% if source == None %} selected {% endif %} value="">Select</option>
-                <option {% if source == 'any_source' %} selected {% endif %} value="any_source">any</option>
-                <option {% if source == 'host_source' %} selected {%%}value="host_source">host</option>
+                <option {% if source == 'any' %} selected {% endif %} value="any">any</option>
+                <option {% if source == 'host' %} selected {% endif %} value="host">host</option>
             </select>
             <br>
             <label for="destination">Destination</label>
@@ -86,21 +86,36 @@
                 <option {% if destination == 'range_dest' %} selected {% endif %} value="range_dest">range</option>
             </select>
             <br>
-            <button type="submit" class="btn btn-primary" name="next_button" value="next_button">Næste</button>
-            {% if destination == 'any' %}
-            <select class="form-select" aria-label="Default select example" name="destination"></select>
-            <option selected value="">Select</option>
-                {% for destinations in destination_list %}
-                <option value="host_dest">{{ destination_list[destinations] }}</option>
+            
+            {% if destination == None %}  
+                <button type="submit" class="btn btn-primary" name="next_button" value="next_button">Næste</button>
+            
+            {% elif destination == 'any_dest' %}
+            
+            <label for="packet">Packet pis</label>
+            <select class="form-select" aria-label="Default select example" name="packet">
+                <option value="">Select</option>
+                {% for packet in packet_list %}
+                <option value="{{ packet }}">{{ packet }}</option>
                 {% endfor %}
+
             </select>
+            
+            {% elif destination == 'host_dest' %}
+                
+                <label for="host_pis">Host</label>
+                <input type="text" name="host_pis" id="host_pis" class="form-control" value="">
+            {% elif destination != 'any_dest' or destination != 'host_dest' %}
+                <label for="port">Port (0-65535)</label>
+                <input type="text" name="port" id="port" class="form-control" value="">
+            
             {% endif %}
                 <!--<label for="source_address">Port (0-65535)</label>
                 <input type="text" name="source_address" id="source_address" class="form-control" value="">
                 <br>-->
             
         {% endif %}
-        
+        <br>
         <button type="submit" class="btn btn-primary" name="save_button" value="save_button">Save</button>
     </form>
 </div>

@@ -1,5 +1,4 @@
 from netmiko import ConnectHandler
-import napalm
 
 ip_address = '192.168.87.20'
 
