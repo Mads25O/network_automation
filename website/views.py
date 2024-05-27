@@ -108,6 +108,14 @@ def manage_networks():
             
             except:
                 flash('Can\'t connect', category='error')
+
+        if request.form.get('access_button'):
+
+            network_id = request.form['access_button']
+            session["network_id"] = network_id
+
+            return redirect(url_for('views.access_list'))
+
             
 
         
@@ -181,9 +189,177 @@ def connect():
             f'interface vlan {vlan_id}',
             f'ip address 192.168.100.120 255.255.255.0'
         ]
+
         connection.send_config_set(config_commands)
         connection.send_command('write memory')
+        connection.disconnect()
 
         return redirect(url_for('views.connect'))
     
-    return render_template('connect.html', user=current_user, network_name=network_name, host=host, username=username, password=password, output=output)
+    return render_template('connect.html', 
+                           user=current_user, 
+                           network_name=network_name, 
+                           host=host, username=username, 
+                           password=password, 
+                           output=output)
+
+@views.route('/access-list', methods = ['GET', 'POST'])
+@login_required
+def access_list():
+
+    network_id = session["network_id"]
+    network = Networks.query.filter_by(user_id=current_user.id, network_id=network_id).first()
+    network_name = network.network_name
+    host = network.host
+    username = network.username
+    password = network.password
+
+    access_list_name = None
+    hostname = None
+    permit_or_deny = None
+    any_or_host = None
+    protocols = None
+    custom_protocols = None
+
+    if session["extended_access"] == 'False':
+        extended = False
+
+    if session["extended_access"] == 'True':
+        extended = True
+
+    if session["extended_access"] == 'None':
+        extended = False
+
+    command_config = []
+    dropdown_list = []
+
+
+    if request.method == 'POST':
+        
+        
+        if request.form.get('extended_button'):
+            extended = True
+            session['extended_access'] = 'True'
+
+
+        if request.form.get('standard_button'):
+            extended = False
+            session['extended_access'] = 'False'
+
+        if request.form.get('save_button'):
+
+            access_list_name = request.form.get('access_list_name')
+            action = request.form.get('action')
+            type = request.form.get('type')
+            ip_or_port = request.form.get('ip_or_port')
+
+            permit_or_deny = request.form.get('permit_or_deny')
+            any_or_host = request.form.get('any_or_host')
+            
+            protocols = request.form.get('protocols')
+            custom_protocols = request.form.get('custom_protocols')
+            hostname = request.form.get('hostname')
+            source_address = request.form.get('source_address')
+
+            print(permit_or_deny)
+
+            if custom_protocols != '':
+                pass
+
+            if source_address != '':
+                pass
+
+            
+
+            
+
+            #print(access_list_name, ip_or_port, action, type)
+
+            command_config.append(f'ip access-list standard {access_list_name}')
+
+            if action == 'permit':
+                command_config.append(f'permit {ip_or_port}')
+            else:
+                command_config.append(f'deny {ip_or_port}')
+            
+            '''if type == 'ip':
+                command_config.append('ip')
+            else:
+                command_config.append('port')'''
+
+            
+
+            try:
+                connection = ConnectHandler(host=host, port=22,
+                                            username=username, password=password,
+                                            device_type='cisco_ios')
+                
+                #output = connection.send_config_set(command_config)
+                #save = connection.send_command('write memory')
+                #print(output)
+
+            except:
+                pass
+        
+        if request.form.get('next_button'):
+
+            
+
+            access_list_name = request.form.get('access_list_name')
+            action = request.form.get('action')
+            type = request.form.get('type')
+            ip_or_port = request.form.get('ip_or_port')
+
+            permit_or_deny = request.form.get('permit_or_deny')
+            any_or_host = request.form.get('any_or_host')
+            
+            protocols = request.form.get('protocols')
+            custom_protocols = request.form.get('custom_protocols')
+            hostname = request.form.get('hostname')
+            source_address = request.form.get('source_address')
+
+            destination = request.form.get('destination')
+
+            if destination == 'any':
+                dropdown_list = ['dscp', 'eq', 'fragments', 'gt', 'log', 'log-input', 'lt', 'neq', 'option', 'precedence', 'range', 'time-range', 'tos']
+            
+            elif destination == 'host':
+                dropdown_list = []
+        
+
+        
+
+    
+
+    return render_template('access-list.html', 
+                           user=current_user,  
+                           network_name=network_name, 
+                           host=host, 
+                           username=username,
+                           password=password,
+                           extended=extended,
+                           access_list_name = access_list_name,
+                           hostname=hostname,
+                           permit_or_deny=permit_or_deny,
+                           protocols=protocols,
+                           custom_protocols=custom_protocols,
+                           any_or_host=any_or_host,
+                           dropdown_list=dropdown_list)
+
+@views.route('/submit', methods=['GET', 'POST'])
+@login_required
+def submit():
+    action = request.form.get('action')
+    if action == 'permit':
+        print("Permit was selected.")
+    elif action == 'deny':
+        print("Deny was selected.")
+    elif action == 'ip':
+        print('IP was selected')
+    elif action == 'port':
+        print('Port was selected')
+    else:
+        print("No valid selection was made.")
+    
+
+    
