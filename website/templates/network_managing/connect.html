@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}Connect to network{% endblock %}
+{% block content %}
+
+<h1>Connection</h1>
+<div class="container mt-4 border rounded">
+  <h3 class="text-center">Network information</h3>
+  <div class="row row-cols-2">
+    <div class="col">
+      <h2 class="text-center">Interfaces</h2>
+      <div class="table-container table-scrollable">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>Interface</th>
+              <th>IP Address</th>
+              <th>Status</th>
+              <th>Protocol</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for interface in interfaces %}
+            <tr>
+              <td>{{ interface['interface'] }}</td>
+              <td>{{ interface['ip_address'] }}</td>
+              <td>{{ interface['status'] }}</td>
+              <td>{{ interface['proto'] }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="col">
+      <h3 class="text-center">VLANS</h3>
+      <div class="table-container table-scrollable">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>VLAN</th>
+              <th>Name</th>
+              <th>Status</th>
+              <th>Ports</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for vlan in vlans %}
+            <tr>
+              <td>{{ vlan['vlan_id'] }}</td>
+              <td>{{ vlan['vlan_name'] }}</td>
+              <td>{{ vlan['status'] }}</td>
+              <td>{{ vlan['interfaces'] | join(', ') }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <h3 class="text-center">Manage</h3>
+  <form action="" method="POST" class="pe-2">
+    <button type="submit" class="btn btn-primary align-center" name="change_button"
+      value="{{ session['network_id'] }}">Change settings</button>
+
+
+    <button type="submit" class="btn btn-primary align-center" name="access_button"
+      value="{{ session['network_id'] }}">Access List</button>
+
+
+    <button type="submit" class="btn btn-primary align-center" name="vlan_button"
+      value="{{ session['network_id'] }}">VLANS</button>
+
+
+    <button type="submit" class="btn btn-primary align-center" name="dhcp_button"
+      value="{{ session['network_id'] }}">DHCP</button>
+
+    <button type="submit" class="btn btn-primary align-center" name="ntp_button"
+      value="{{ session['network_id'] }}">NTP</button>
+      
+    <button type="submit" class="btn btn-primary align-center" name="port_sec_button"
+      value="{{ session['network_id'] }}">Port security</button>
+
+    <button type="submit" class="btn btn-primary align-center" name="router_button"
+      value="{{ session['network_id'] }}">Tilføj router</button>
+  </form>
+</div>
+
+
+
+{% endblock %}

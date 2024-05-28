@@ -19,9 +19,11 @@ def create_app():
 
     from .views import views
     from .auth import auth
+    from .network_managing import network
 
     app.register_blueprint(views, url_prefix='/')
     app.register_blueprint(auth, url_prefix='/')
+    app.register_blueprint(network, url_prefix='/networks')
 
     from .models import User, Note, Networks
     

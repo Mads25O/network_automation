@@ -15,12 +15,12 @@
         <input type="text" name="subnetmaske" id="subnetmaske" class="form-control">
 
         <label for="router">Router</label>
-        <select class="form-select" aria-label="Default select example" name="vlan">
-            {% for i in range(10, 1001, 10) %}
-            <option value="{{ i }}">{{ i }}</option>
+        <select class="form-select" aria-label="Default select example" name="router" id="router">
+            {% for router in routers %}
+            <option value="{{ router.router_name }}">{{ router.router_name + ' ' + router.host }}</option>
             {% endfor %}
         </select>
-        
+
         <label for="dns_server">DNS server</label>
         <input type="text" name="dns_server" id="dns_server" class="form-control">
 

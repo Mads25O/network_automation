@@ -16,6 +16,17 @@ class Networks(db.Model):
     username = db.Column(db.String(100))
     password = db.Column(db.String(100))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    routers = db.relationship('Routers')
+
+class Routers(db.Model, UserMixin):
+    id = db.Column(db.Integer, primary_key=True)
+    router_id = db.Column(db.Integer)
+    router_name = db.Column(db.String(100))
+    host = db.Column(db.String(100))
+    username = db.Column(db.String(100))
+    password = db.Column(db.String(100))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    networks = db.Column(db.Integer, db.ForeignKey('networks.id'))
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
