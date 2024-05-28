@@ -5,7 +5,7 @@
 
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
-        <link rel="stylesheet" href="C:\Users\45287\Documents\Python\network_automation\website\static">
+        <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 
         <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
         integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
@@ -40,17 +40,18 @@
                         {% if user.is_authenticated %}
                         <a href="{{ url_for('views.home') }}" class="nav-item nav-link" id="home">Home</a>
                         <a href="{{ url_for('views.notes') }}" class="nav-item nav-link" id="notes">Notes</a>
-                        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <a href="{{ url_for('views.networks') }}" class="nav-item nav-link" id="networks">Networks</a>
+                        <!--<ul class="navbar-nav me-auto mb-2 mb-lg-0">
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 Network
                                 </a>
                                 <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" href="{{ url_for('views.create_network')}}">Create Network</a></li>
-                                    <li><a class="dropdown-item" href="{{ url_for('views.manage_networks')}}">Manage Networks</a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('network.create_network')}}">Create Network</a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('views.networks')}}">Networks</a></li>
                                 </ul>
                             </li>
-                        </ul>
+                        </ul>-->
                         <a href="{{ url_for('views.home') }}" class="nav-item nav-link" id="home">Automatisering</a>
                         <a href="{{ url_for('views.home') }}" class="nav-item nav-link" id="home">Profile</a>
                         <a href="{{ url_for('auth.logout') }}" class="nav-item nav-link" id="logout">Logout</a>
