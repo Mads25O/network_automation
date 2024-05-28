@@ -91,7 +91,6 @@ def manage_networks():
             
             session["network_id"] = network_id
             network = Networks.query.filter_by(user_id=current_user.id, network_id=network_id).first()
-            network_name = network.network_name
             host = network.host
             username = network.username
             password = network.password
@@ -116,6 +115,40 @@ def manage_networks():
             session["extended_access"] = 'False'
 
             return redirect(url_for('views.access_list'))
+        
+        if request.form.get('vlan_button'):
+
+            network_id = request.form['vlan_button']
+            session["network_id"] = network_id
+            network = Networks.query.filter_by(user_id=current_user.id, network_id=network_id).first()
+            host = network.host
+            username = network.username
+            password = network.password
+
+            try:
+                connection = ConnectHandler(host=host, port=22,
+                                        username=username, password=password,
+                                        device_type='cisco_ios')
+                vlans = connection.send_command('sh vlan br')
+
+                print(vlans)
+                return redirect(url_for('views.vlans'))
+            
+            except:
+                flash('Can\'t connect', category='error')
+
+        
+        if request.form.get('dhcp_button'):
+
+            ### Netværk ###
+            network_id = request.form['dhcp_button']
+            session["network_id"] = network_id
+            network = Networks.query.filter_by(user_id=current_user.id, network_id=network_id).first()
+            host = network.host
+            username = network.username
+            password = network.password
+
+            return redirect(url_for('views.dhcp'))
 
             
 
@@ -208,6 +241,7 @@ def connect():
 @login_required
 def access_list():
 
+    # Netværk
     network_id = session["network_id"]
     network = Networks.query.filter_by(user_id=current_user.id, network_id=network_id).first()
     network_name = network.network_name
@@ -215,6 +249,7 @@ def access_list():
     username = network.username
     password = network.password
 
+    # Tomme variabler
     access_list_name = None
     hostname = None
     permit_or_deny = None
@@ -224,13 +259,13 @@ def access_list():
     destination = None
     source = None
 
+    send = False
+
     if session["extended_access"] == 'False':
         extended = False
-
-    if session["extended_access"] == 'True':
+    elif session["extended_access"] == 'True':
         extended = True
-
-    if session["extended_access"] == 'None':
+    else:
         extended = False
 
     command_config = []
@@ -252,8 +287,6 @@ def access_list():
         if request.form.get('save_button'):
 
             access_list_name = request.form.get('access_list_name')
-            ip_or_port = request.form.get('ip_or_port')
-
             permit_or_deny = request.form.get('permit_or_deny')
             any_or_host = request.form.get('any_or_host')
             
@@ -264,67 +297,96 @@ def access_list():
             destination = request.form.get('destination')
 
             packet = request.form.get('packet')
-            host_pis = request.form.get('host')
+            host_pis = request.form.get('host_pis')
             port = request.form.get('port')
 
 
-            #print(access_list_name, permit_or_deny, any_or_host, protocols, custom_protocols, hostname, source)
              
-            
+            ### Extended access liste lavet ###
             if session['extended_access'] == 'True':
                 command_config.append(f'ip access-list extended {access_list_name}')
                 command_config.append(f'{permit_or_deny}')
 
                 if custom_protocols != '':
                     command_config.append(f'{custom_protocols} {source} {destination}')
+
                 else:
                     command_config.append(f'{protocols} {source} {destination}')
                 
 
-                if host_pis != '':
+                if host_pis != None:
                     command_config.append(f'{host_pis}')
-                elif port != '':
-                    command_config.append(f'{port}')
+                    send = True
+                
+                elif port != None:
+                    try:
+                        port_int = int(port)
+                        command_config.append(f'{port}')
+                        send = True
+                    except:
+                        flash('Port kan kun være tal', category='error')
+                    
+                    
                 else:
                     command_config.append(f'{packet}')
+                    send = True
+                    
                 
-                print(command_config)
-            
+                first_element = command_config[0]
+                second_element = ' '.join(command_config[1:])
+                command_config = [first_element, second_element]
+                
+                
 
+            
+            ### Standard access liste laves ###
             if session['extended_access'] == 'False':
 
                 command_config.append(f'ip access-list standard {access_list_name}')
 
                 if permit_or_deny == 'permit':
-                    command_config.append(f'permit {ip_or_port}')
+                    command_config.append(f'permit')
                 else:
-                    command_config.append(f'deny {ip_or_port}')
+                    command_config.append(f'deny')
+
+
+                if any_or_host == 'any':
+                    
+                    if hostname != '':
+                        flash('Hostname skal være tomt, når "any" er valgt', category='error')
+
+                    else:
+                        command_config.append(any_or_host)
+                        send = True
+
+                else:
+                    command_config.append(f'{any_or_host} {hostname}')
+                    send = True
+
+                first_element = command_config[0]
+                second_element = ' '.join(command_config[1:])
+                command_config = [first_element, second_element]
             
-            '''if type == 'ip':
-                command_config.append('ip')
-            else:
-                command_config.append('port')'''
-
+            print(command_config)
             
+            
+            if send == True:
+                try:
+                    connection = ConnectHandler(host=host, port=22,
+                                                username=username, password=password,
+                                                device_type='cisco_ios')
+                    
+                    output = connection.send_config_set(command_config)
+                    save = connection.send_command('write memory')
+                    print(output)
+                    send = False
 
-            '''try:
-                connection = ConnectHandler(host=host, port=22,
-                                            username=username, password=password,
-                                            device_type='cisco_ios')
-                
-                #output = connection.send_config_set(command_config)
-                #save = connection.send_command('write memory')
-                #print(output)
-
-            except:
-                pass'''
+                except:
+                    pass
         
         if request.form.get('next_button'):
             
             access_list_name = request.form.get('access_list_name')
-            action = request.form.get('action')
-            ip_or_port = request.form.get('ip_or_port')
-
             permit_or_deny = request.form.get('permit_or_deny')
             any_or_host = request.form.get('any_or_host')
             
@@ -365,20 +427,137 @@ def access_list():
                            any_or_host=any_or_host,
                            packet_list=packet_list)
 
-@views.route('/submit', methods=['GET', 'POST'])
+@views.route('/vlans', methods=['GET', 'POST'])
 @login_required
-def submit():
-    action = request.form.get('action')
-    if action == 'permit':
-        print("Permit was selected.")
-    elif action == 'deny':
-        print("Deny was selected.")
-    elif action == 'ip':
-        print('IP was selected')
-    elif action == 'port':
-        print('Port was selected')
-    else:
-        print("No valid selection was made.")
-    
+def vlans():
+
+    ### Netværk ###
+    network_id = session["network_id"]
+    network = Networks.query.filter_by(user_id=current_user.id, network_id=network_id).first()
+    network_name = network.network_name
+    host = network.host
+    username = network.username
+    password = network.password
+   
+    vlans = None
+    selected_interface = None
+    trunk_button = None
+    access_button = None
+    interfaces = None
+
+    send = False
+
+    command_config = []
+
+    trunk_dropdown = ['encapsulation', 'nonegotiate', 'native', 'allowed']
+
+    try:
+        connection = ConnectHandler(host=host, port=22,
+                                    username=username, password=password,
+                                    device_type='cisco_ios')
+                    
+        vlans = connection.send_command('sh vlan br', use_textfsm=True)
+        interfaces = connection.send_command('sh ip int br', use_textfsm=True)
+        session["vlans"] = vlans
+        session["interfaces"] = interfaces
+        
+        
+
+    except:
+        flash('Can\'t connect', category='error')
+
+    if request.method == 'POST':
+
+
+        vlan = request.form.get('vlan')
+        vlan_name = request.form.get('vlan_name')
+
+        switchport_mode = request.form.get('switchport_mode')
+        selected_interface = request.form.get('interfaces')
+        session["selected_interface"] = selected_interface
+
+        trunk_options = request.form.get('trunk_options')
+        trunk_user_input = request.form.get('trunk_user_input')
+        vlan_switchport = request.form.get('vlan_switchport')
+        
+
+        
+        
+
+
+        if request.form.get('access_button'):
+            access_button = True
+            swp_mode = 'access'
+            session["swp_mode"] = swp_mode
+            
+        
+        elif request.form.get('trunk_button'):
+            trunk_button = True
+            swp_mode = 'trunk'
+            session["swp_mode"] = swp_mode
+
+        elif request.form.get('create_button'):
+            command_config = [f'vlan {vlan}', f'name {vlan_name}']
+            send = True
+            
+        elif request.form.get('send_button'):
+            swp_mode = session["swp_mode"]
+            command_config = [f'interface {selected_interface}', f'switchport mode {swp_mode}']
+            
+            if swp_mode == 'trunk':
+            
+                if trunk_options != '':
+                    print('trunk er ikke none')
+                    print(trunk_options)
+                    command_config.append(f'{trunk_options} {trunk_user_input}')
+            
+            if swp_mode == 'access':
+                
+                command_config.append(vlan_switchport)
+                
+            send = True
+
+        
+
+        
+            
+
+
+        if send == True:
+            first_element = command_config[0]
+            second_element = ' '.join(command_config[1:])
+            command_config = [first_element, second_element]
+            print(command_config)
+            '''try:
+                connection = ConnectHandler(host=host, port=22,
+                                    username=username, password=password,
+                                    device_type='cisco_ios')
+                    
+                output = connection.send_config_set(command_config)
+                print(output)
+                send = False
+        
+            except:
+                flash('Can\'t connect', category='error')'''
+            
+
+
+
+
+        
+
 
     
+    return render_template('vlans.html', 
+                           user=current_user, 
+                           vlans=vlans, 
+                           interfaces=interfaces, 
+                           selected_interface=selected_interface, 
+                           access_button=access_button,
+                           trunk_button=trunk_button,
+                           trunk_dropdown=trunk_dropdown)
+
+@views.route('/dhcp')
+@login_required
+def dhcp():
+    return render_template('dhcp.html', user=current_user)

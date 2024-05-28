@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}VLANS{% endblock %}
+{% block content %}
+<div class="container">
+    <h1>VLANS</h1>
+    <h3>Lav et vlan</h3>
+    <label for="packet">Hvilket VLAN?</label>
+    <form action="" method="POST" class="pe-2">
+        <select class="form-select" aria-label="Default select example" name="vlan">
+            {% for i in range(10, 1001, 10) %}
+            <option value="{{ i }}">{{ i }}</option>
+            {% endfor %}
+        </select>
+        <label for="vlan_name">VLAN Navn</label>
+        <input type="text" name="vlan_name" id="vlan_name" class="form-control">
+        <button type="submit" class="btn btn-primary mt-2" name="create_button" value="create_button">Create</button>
+    </form>
+    <br>
+    <h3>Link VLANS</h3>
+    <form action="" method="POST" clas="pe-2">
+        
+        <label for="interfaces">Vælg interface</label>
+        <select name="interfaces" id="interfaces" class="form-select">
+            {% for interface in session["interfaces"] %}
+                <option value="{{ interface['interface'] }}" {% if selected_interface == interface['interface'] %} selected {% endif %}>{{ interface['interface'] }}</option>
+            {% endfor %}
+        </select>
+        <label for="switchport_mode">Switchport mode</label>
+        <br>
+        <button type="submit" class="btn btn-primary" name="trunk_button" value="trunk_button">Trunk</button>
+        <button type="submit" class="btn btn-primary" name="access_button" value="access_button">Access</button>
+        <br>
+        {% if trunk_button == True %}
+        <label for="trunk_options">Trunk conf (Optional)</label>
+            <select name="trunk_options" id="trunk_options" class="form-select">
+                <option class="form-select" value=""></option>
+            {% for options in trunk_dropdown %}
+                <option class="form-select" value="{{ options }}">{{ options }}</option>
+            {% endfor %}
+            </select>
+            <label for="trunk_user_input">Trunk user input (Optional)</label>
+            <input type="text" name="trunk_user_input" id="trunk_user_input" class="form-control mb-3">
+        {% elif access_button == True %}
+        <br>
+        <label for="vlan_switchport">Vælg VLAN</label>
+            <select name="vlan_switchport" id="vlan_switchport" class="form-select">
+            {% for vlan in session["vlans"] %}
+                <option class="form-select" value="{{ vlan['vlan_name'] + ' ' + vlan['vlan_id'] }}">{{ vlan['vlan_name'] + ' ' + vlan['vlan_id'] }}</option>
+            {% endfor %}
+            </select>
+        {% endif %}
+        <br>
+        <button type="submit" class="btn btn-primary" name="send_button" value="send_button">Send</button>
+    </form>
+</div>
+{% endblock %}

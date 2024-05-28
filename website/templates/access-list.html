@@ -24,7 +24,7 @@
         
             <label for="permit_or_deny">Permit or deny</label>
             <select class="form-select" aria-label="Default select example" name="permit_or_deny">
-                <option {% if permit_or_deny == None %} selected {% endif %} value="">Select</option>
+                <option {% if permit_or_deny == None %} selected {% endif %} value=""></option>
                 <option {% if permit_or_deny == 'permit' %} selected {% endif %} value="permit">Permit</option>
                 <option {% if permit_or_deny == 'deny' %} selected {% endif %} value="deny">Deny</option>
             </select>
@@ -32,7 +32,7 @@
         {% if extended == False %}
             <label for="any_or_host">Any or host</label>
             <select class="form-select" aria-label="Default select example" name="any_or_host">
-                <option {% if any_or_host == None %} selected {% endif %} value="">Select</option>
+                <option {% if any_or_host == None %} selected {% endif %} value=""></option>
                 <option {% if any_or_host == 'any' %} selected {% endif %} value="any">Any</option>
                 <option {% if any_or_host == 'host' %} selected {% endif %} value="host">Host</option>
             </select>
@@ -48,7 +48,7 @@
             <label for="protocols">Protokoller</label>
             <select class="form-select" aria-label="Default select example" name="protocols" >
                 
-                <option {% if protocols == None %} selected {% endif %} value="">Select</option>
+                <option {% if protocols == None %} selected {% endif %} value=""></option>
                 <option {% if protocols == 'ahp' %} selected {% endif %} value="ahp">ahp</option>
                 <option {% if protocols == 'eigrp' %} selected {% endif %} value="eigrp">eigrp</option>
                 <option {% if protocols == 'gre' %} selected {% endif %} value="gre">gre</option>
@@ -69,43 +69,43 @@
             <br>
             <label for="source">Source</label>
             <select class="form-select" aria-label="Default select example" name="source">
-                <option {% if source == None %} selected {% endif %} value="">Select</option>
+                <option {% if source == None %} selected {% endif %} value=""></option>
                 <option {% if source == 'any' %} selected {% endif %} value="any">any</option>
                 <option {% if source == 'host' %} selected {% endif %} value="host">host</option>
             </select>
             <br>
             <label for="destination">Destination</label>
             <select class="form-select" aria-label="Default select example" name="destination">
-                <option {% if destination == None %} selected {% endif %} value="">Select</option>
-                <option {% if destination == 'any_dest' %} selected {% endif %} value="any_dest">any</option>
-                <option {% if destination == 'eq_dest' %} selected {% endif %} value="eq_dest">eq</option>
-                <option {% if destination == 'gt_dest' %} selected {% endif %} value="gt_dest">gt</option>
-                <option {% if destination == 'host_dest' %} selected {% endif %} value="host_dest">host</option>
-                <option {% if destination == 'lt_dest' %} selected {% endif %} value="lt_dest">lt</option>
-                <option {% if destination == 'neq_dest' %} selected {% endif %} value="neq_dest">neq</option>
-                <option {% if destination == 'range_dest' %} selected {% endif %} value="range_dest">range</option>
+                <option {% if destination == None %} selected {% endif %} value=""></option>
+                <option {% if destination == 'any' %} selected {% endif %} value="any">any</option>
+                <option {% if destination == 'eq' %} selected {% endif %} value="eq">eq</option>
+                <option {% if destination == 'gt' %} selected {% endif %} value="gt">gt</option>
+                <option {% if destination == 'host' %} selected {% endif %} value="host">host</option>
+                <option {% if destination == 'lt' %} selected {% endif %} value="lt">lt</option>
+                <option {% if destination == 'neq' %} selected {% endif %} value="neq">neq</option>
+                <option {% if destination == 'range' %} selected {% endif %} value="range">range</option>
             </select>
             <br>
             
             {% if destination == None %}  
                 <button type="submit" class="btn btn-primary" name="next_button" value="next_button">Næste</button>
             
-            {% elif destination == 'any_dest' %}
+            {% elif destination == '' %}
             
             <label for="packet">Packet pis</label>
             <select class="form-select" aria-label="Default select example" name="packet">
-                <option value="">Select</option>
+                <option value=""></option>
                 {% for packet in packet_list %}
                 <option value="{{ packet }}">{{ packet }}</option>
                 {% endfor %}
 
             </select>
             
-            {% elif destination == 'host_dest' %}
+            {% elif destination == 'host' %}
                 
                 <label for="host_pis">Host</label>
                 <input type="text" name="host_pis" id="host_pis" class="form-control" value="">
-            {% elif destination != 'any_dest' or destination != 'host_dest' %}
+            {% elif destination != 'any' or destination != 'host' %}
                 <label for="port">Port (0-65535)</label>
                 <input type="text" name="port" id="port" class="form-control" value="">
             

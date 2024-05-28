@@ -21,6 +21,12 @@
         <form action="" method="POST" class="pe-2">
             <button type="submit" class="btn btn-primary align-center" name="access_button" value="{{ networks.network_id}}">Access List</button>
         </form>
+        <form action="" method="POST" class="pe-2">
+            <button type="submit" class="btn btn-primary align-center" name="vlan_button" value="{{ networks.network_id}}">VLANS</button>
+        </form>
+        <form action="" method="POST" class="pe-2">
+            <button type="submit" class="btn btn-primary align-center" name="dhcp_button" value="{{ networks.network_id}}">DHCP</button>
+        </form>
         
     </li>
     {% endfor %}
