@@ -22,7 +22,63 @@
             </select>
             <br>
 
-        {% if extended == False %}
+        {% if extended_access | default(False) %}
+        <label for="protocols">Protokoller</label>
+        <select class="form-select" aria-label="Default select example" name="protocols" >
+            
+            <option {% if protocols == None %} selected {% endif %} value=""></option>
+            {% for protokol in protokoller %}
+            <option {% if protocols == protokol %} selected {% endif %} value="{{ protokol }}">{{ protokol }}</option>
+            {% endfor %}
+        </select>
+        <br>
+
+        <label for="custom_protocols">Tast selv protokol (0-255)</label>
+        <input type="text" name="custom_protocols" id="custom_protocols" class="form-control" value={% if custom_protocols != None %} "{{ custom_protocols }}" {% else %} "" {% endif %}>
+        <br>
+
+        <label for="source">Source</label>
+        <select class="form-select" aria-label="Default select example" name="source">
+            <option {% if source == None %} selected {% endif %} value=""></option>
+            <option {% if source == 'any' %} selected {% endif %} value="any">any</option>
+            <option {% if source == 'host' %} selected {% endif %} value="host">host</option>
+        </select>
+        <br>
+
+        <label for="destination">Destination</label>
+        <select class="form-select" aria-label="Default select example" name="destination">
+            <option {% if destination == None %} selected {% endif %} value=""></option>
+            {% for dest in destinations %}
+                
+                <option {% if destination == dest %} selected {% endif %} value="{{ dest }}">{{ dest }}</option>
+            {% endfor %}
+        </select>
+        <br>
+        
+            {% if (destination | default('')) == '' %}  
+            <button type="submit" class="btn btn-primary" name="next_button" value="next_button">Næste</button>
+            
+            {% elif (destination | default('')) == 'any' %}
+            
+            <label for="packet">Packet pis</label>
+            <select class="form-select" aria-label="Default select example" name="packet">
+                <option value=""></option>
+                {% for packet in packet_list %}
+                <option value="{{ packet }}">{{ packet }}</option>
+                {% endfor %}
+
+            </select>
+            
+            {% elif (destination | default('')) == 'host' %}
+                
+                <label for="host_pis">Host</label>
+                <input type="text" name="host_pis" id="host_pis" class="form-control" value="">
+            {% elif (destination | default('')) != 'any' or (destination | default('')) != 'host' %}
+                <label for="port">Port (0-65535)</label>
+                <input type="text" name="port" id="port" class="form-control" value="">
+            
+            {% endif %}
+        {% else %}
             <label for="any_or_host">Any or host</label>
             <select class="form-select" aria-label="Default select example" name="any_or_host">
                 <option {% if any_or_host == None %} selected {% endif %} value=""></option>
@@ -34,65 +90,7 @@
         <label for="hostname">Hostname</label>
         <input type="text" name="hostname" id="hostname" class="form-control" value={% if hostname != None %}"{{ hostname }}" {% else %} "" {% endif %}>
         <br>
-        {% endif %}
-        
-        
-        {% if extended == True %}
-            <label for="protocols">Protokoller</label>
-            <select class="form-select" aria-label="Default select example" name="protocols" >
-                
-                <option {% if protocols == None %} selected {% endif %} value=""></option>
-                {% for protokol in protokoller %}
-                <option {% if protocols == '{{ protokol }}' %} selected {% endif %} value="{{ protokol }}">{{ protokol }}</option>
-                {% endfor %}
-            </select>
-            <br>
 
-            <label for="custom_protocols">Tast selv protokol (0-255)</label>
-            <input type="text" name="custom_protocols" id="custom_protocols" class="form-control" value={% if custom_protocols != None %} "{{ custom_protocols }}" {% else %} "" {% endif %}>
-            <br>
-
-            <label for="source">Source</label>
-            <select class="form-select" aria-label="Default select example" name="source">
-                <option {% if source == None %} selected {% endif %} value=""></option>
-                <option {% if source == 'any' %} selected {% endif %} value="any">any</option>
-                <option {% if source == 'host' %} selected {% endif %} value="host">host</option>
-            </select>
-            <br>
-
-            <label for="destination">Destination</label>
-            <select class="form-select" aria-label="Default select example" name="destination">
-                <option {% if destination == None %} selected {% endif %} value=""></option>
-                {% for destination in destinations %}
-                <option {% if destination == '{{ destination }}' %} selected {% endif %} value="{{ destination }}">{{ destination }}</option>
-                {% endfor %}
-            </select>
-            <br>
-            
-            {% if destination == None %}  
-                <button type="submit" class="btn btn-primary" name="next_button" value="next_button">Næste</button>
-            
-            {% elif destination == 'any' %}
-            
-            <label for="packet">Packet pis</label>
-            <select class="form-select" aria-label="Default select example" name="packet">
-                <option value=""></option>
-                {% for packet in packet_list %}
-                <option value="{{ packet }}">{{ packet }}</option>
-                {% endfor %}
-
-            </select>
-            
-            {% elif destination == 'host' %}
-                
-                <label for="host_pis">Host</label>
-                <input type="text" name="host_pis" id="host_pis" class="form-control" value="">
-            {% elif destination != 'any' or destination != 'host' %}
-                <label for="port">Port (0-65535)</label>
-                <input type="text" name="port" id="port" class="form-control" value="">
-            
-            {% endif %}
-            
         {% endif %}
         <br>
         <button type="submit" class="btn btn-primary" name="save_button" value="save_button">Save</button>

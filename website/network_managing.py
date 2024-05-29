@@ -176,183 +176,25 @@ def connect():
 @login_required
 def access_list():
 
-    # Netværk
-    network_id = session["network_id"]
-    network = Networks.query.filter_by(user_id=current_user.id, network_id=network_id).first()
-    network_name = network.network_name
-    host = network.host
-    username = network.username
-    password = network.password
+    
 
-    # Tomme variabler
-    access_list_name = None
-    hostname = None
-    permit_or_deny = None
-    any_or_host = None
-    protocols = None
-    custom_protocols = None
-    destination = None
-    source = None
+    dropdown_dict = {
+        'packet_list' : ['dscp', 'eq', 'fragments', 'gt', 'log', 'log-input', 'lt', 'neq', 'option', 'precedence', 'range', 'time-range', 'tos'],
+        'protokoller' : ['ahp', 'eigrp', 'gre', 'icmp', 'igmp', 'ip', 'ipinip', 'nos', 'ospf', 'pcp', 'pim', 'tcp', 'udp'],
+        'destinations' : ['any', 'eq', 'gt', 'host', 'lt', 'neq', 'range']
+    }
 
-    send = False
+    if request.form.get('extended_button'):
+            session['extended_access'] = True
 
-    if session["extended_access"] == 'False':
-        extended = False
-    elif session["extended_access"] == 'True':
-        extended = True
-    else:
-        extended = False
+    if request.form.get('standard_button'):
+            session['extended_access'] = False
 
-    command_config = []
-    packet_list = ['dscp', 'eq', 'fragments', 'gt', 'log', 'log-input', 'lt', 'neq', 'option', 'precedence', 'range', 'time-range', 'tos']
-    protokoller = ['ahp', 'eigrp', 'gre', 'icmp', 'igmp', 'ip', 'ipinip', 'nos', 'ospf', 'pcp', 'pim', 'tcp', 'udp']
-    destinations = ['any', 'eq', 'gt', 'host', 'lt', 'neq', 'range']
-
-
-
-    if request.method == 'POST':
-        
-        
-        if request.form.get('extended_button'):
-            extended = True
-            session['extended_access'] = 'True'
-
-
-        if request.form.get('standard_button'):
-            extended = False
-            session['extended_access'] = 'False'
-
-        if request.form.get('save_button'):
-
-            access_list_name = request.form.get('access_list_name')
-            permit_or_deny = request.form.get('permit_or_deny')
-            any_or_host = request.form.get('any_or_host')
-            
-            protocols = request.form.get('protocols')
-            custom_protocols = request.form.get('custom_protocols')
-            hostname = request.form.get('hostname')
-            source = request.form.get('source')
-            destination = request.form.get('destination')
-
-            packet = request.form.get('packet')
-            host_pis = request.form.get('host_pis')
-            port = request.form.get('port')
-
-
-             
-            ### Extended access liste lavet ###
-            if session['extended_access'] == 'True':
-                command_config.append(f'ip access-list extended {access_list_name}')
-                command_config.append(f'{permit_or_deny}')
-
-                if custom_protocols != '':
-                    command_config.append(f'{custom_protocols} {source} {destination}')
-
-                else:
-                    command_config.append(f'{protocols} {source} {destination}')
-                
-
-                if host_pis != None:
-                    command_config.append(f'{host_pis}')
-                    send = True
-                
-                elif port != None:
-                    try:
-                        port_int = int(port)
-                        command_config.append(f'{port}')
-                        send = True
-                    except:
-                        flash('Port kan kun være tal', category='error')
-                    
-                    
-                else:
-                    command_config.append(f'{packet}')
-                    send = True
-                    
-                
-                first_element = command_config[0]
-                second_element = ' '.join(command_config[1:])
-                command_config = [first_element, second_element]
-                
-                
-
-            
-            ### Standard access liste laves ###
-            if session['extended_access'] == 'False':
-
-                command_config.append(f'ip access-list standard {access_list_name}')
-
-                if permit_or_deny == 'permit':
-                    command_config.append(f'permit')
-                else:
-                    command_config.append(f'deny')
-
-
-                if any_or_host == 'any':
-                    
-                    if hostname != '':
-                        flash('Hostname skal være tomt, når "any" er valgt', category='error')
-
-                    else:
-                        command_config.append(any_or_host)
-                        send = True
-
-                else:
-                    command_config.append(f'{any_or_host} {hostname}')
-                    send = True
-
-                first_element = command_config[0]
-                second_element = ' '.join(command_config[1:])
-                command_config = [first_element, second_element]
-            
-            print(command_config)
-            
-            
-            if send == True:
-                try:
-                    connection = ConnectHandler(host=host, port=22,
-                                                username=username, password=password,
-                                                device_type='cisco_ios')
-                    
-                    output = connection.send_config_set(command_config)
-                    save = connection.send_command('write memory')
-                    print(output)
-                    send = False
-
-                except:
-                    pass
-        
-        if request.form.get('next_button'):
-            
-            access_list_name = request.form.get('access_list_name')
-            permit_or_deny = request.form.get('permit_or_deny')
-            any_or_host = request.form.get('any_or_host')
-            
-            protocols = request.form.get('protocols')
-            custom_protocols = request.form.get('custom_protocols')
-            hostname = request.form.get('hostname')
-            source = request.form.get('source')
-            destination = request.form.get('destination')    
-
+    #handle_access_list(request.method, request.form, session)
+    # Tager alle form nøgler og pakker dem ud som en key value pair arg
+    print(request.form)
     return render_template('network_managing/access-list.html', 
-                           user=current_user,  
-                           network_name=network_name, 
-                           host=host, 
-                           username=username,
-                           password=password,
-                           extended=extended,
-                           access_list_name=access_list_name,
-                           hostname=hostname,
-                           permit_or_deny=permit_or_deny,
-                           protocols=protocols,
-                           protokoller=protokoller,
-                           source=source,
-                           destination=destination,
-                           destinations=destinations,
-                           custom_protocols=custom_protocols,
-                           any_or_host=any_or_host,
-                           packet_list=packet_list
-                           )
+                           **request.form, **dropdown_dict, **session)
 
 @network.route('/vlans', methods=['GET', 'POST'])
 @login_required
@@ -556,7 +398,101 @@ def port_security():
         mac = request.form.get('mac')
         violation = request.form.get('violation')
 
-        
+
 
 
     return render_template('port_security.html', user=current_user, violations=violations)
+
+
+def handle_access_list(method, form, session):
+    # Netværk
+
+
+    if method != 'POST':
+        return
+    
+    if not form.get('save_button'):
+        return
+    
+    network_id = session["network_id"]
+    network = Networks.query.filter_by(user_id=current_user.id, network_id=network_id).first()
+
+    send = False
+
+    if session["extended_access"] == 'False':
+        extended = False
+    elif session["extended_access"] == 'True':
+        extended = True
+    else:
+        extended = False
+
+    command = ''
+    command_config = []
+
+            
+    ### Extended access liste lavet ###
+    if session['extended_access'] == 'True':
+        protocols = form.get("protocols")
+        if form.get("custom_protocols") != '':
+            protocols = form.get("custom_protocols")
+
+        command = f'ip access-list extended {form.get("access_list_name")}'
+        command_config.append(form.get("permit_or_deny"))
+        command_config.append(protocols)
+        command_config.append(form.get("source"))
+        command_config.append(form.get("destination"))
+
+        if form.get("host_pis") != None:
+            command_config.append(f'{form.get("host_pis")}')
+            
+        
+        elif form.get("port") != None:
+            try:
+                port_int = int(form.get("port"))
+                command_config.append(str(port_int))
+                
+            except:
+                flash('Port kan kun være tal', category='error')
+        # To-do return abort
+            
+        else:
+            command_config.append(f'{form.get("packet")}')
+    
+
+    ### Standard access liste laves ###
+    else:
+
+        command = f'ip access-list standard {form.get("access_list_name")}'
+
+        if form.get("permit_or_deny") == 'permit':
+            command_config.append(f'permit')
+        else:
+            command_config.append(f'deny')
+
+        # Source i HTML
+        if form.get("any_or_host") == 'any':
+        
+            command_config.append('any')
+
+        else:
+            command_config.append(f'host {form.get("hostname")}')
+
+    print(command_config)
+    command_exec = [command, ' '.join(command_config)]
+    
+    print(command_exec)
+    
+    
+    '''if send == True:
+        try:
+            connection = ConnectHandler(host=host, port=22,
+                                        username=username, password=password,
+                                        device_type='cisco_ios')
+            
+            output = connection.send_config_set(command_config)
+            save = connection.send_command('write memory')
+            print(output)
+            send = False
+
+        except:
+            pass'''
