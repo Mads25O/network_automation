@@ -4,25 +4,19 @@
 <div class="container">
     <h1>Port security</h1>
     <form action="" method="POST" class="pe-2">
-        <label for="interface">Interface</label>
-        <select name="interface" id="interface" class="form-select">
+        <label for="from_interface">Interface</label>
+        <select name="from_interface" id="from_interface" class="form-select">
             {% for interface in session["interfaces"] %}
                 <option value="{{ interface['interface'] }}" {% if selected_interface == interface['interface'] %} selected {% endif %}>{{ interface['interface'] }}</option>
             {% endfor %}
         </select>
 
-        <label for="maximum">Maximum</label>
-        <input type="text" name="maximum" id="maximum" class="form-control">
-
-        <label for="mac">MAC Address</label>
-        <input type="text" name="mac" id="mac" class="form-control">
-
-        <label for="violation">Violation</label>
-        <select name="violation" id="violation" class="form-select">
-        {% for violation in violations %}
-            <option class="form-select" value="{{ violation }}">{{ violation }}</option>
-        {% endfor %}
-        </select>
+        <!--<label for="to_interface">Interface</label>
+        <select name="to_interface" id="to_interface" class="form-select">
+            {% for interface in session["interfaces"] %}
+                <option value="{{ loop.index }}" {% if selected_interface == interface['interface'] %} selected {% endif %}>{{ interface['interface'] }}</option>
+            {% endfor %}
+        </select>-->
 
         <button type="submit" class="btn btn-primary mt-2" name="create_button" value="create_button">Create</button>
     </form>

@@ -96,6 +96,10 @@ def connect():
     username = network.username
     password = network.password
 
+    routers = Routers.query.filter_by(user_id=current_user.id).first()
+
+    
+
     interfaces = ['0', '0']
     vlans = ['0', '0']
 
@@ -175,7 +179,8 @@ def connect():
                            host=host, username=username, 
                            password=password, 
                            interfaces=interfaces,
-                           vlans=vlans)
+                           vlans=vlans,
+                           routers=routers)
 
 @network.route('/access-list', methods = ['GET', 'POST'])
 @login_required
@@ -342,19 +347,32 @@ def handle_ntp_server(method, form):
 @network.route('/port-security', methods=['GET', 'POST'])
 @login_required
 def port_security():
-
-    violations = ['shutdown', 'restrict', 'protect']
     
-    if request.method == 'POST':
-        interface = request.form.get('interface')
-        maximum = request.form.get('maximum')
-        mac = request.form.get('mac')
-        violation = request.form.get('violation')
+    result = handle_port_security(request.method, request.form)
+    if result == None:
+        # Tager alle form nøgler og pakker dem ud som en key value pair arg
+        return render_template('network_managing/port_security.html', 
+                            user=current_user, **request.form, **session)
+    
+    remote_execute(result, session, Networks)
 
+    return redirect(url_for('network.connect'))
 
-
-
-    return render_template('port_security.html', user=current_user, violations=violations)
+def handle_port_security(method, form):
+    if method != 'POST':
+        return None
+    
+    if not form.get('create_button'):
+        return None
+    
+    return [
+        f'interface range {form.get("from_interface")} - 3',
+        'switchport port-security',
+        'switchport port-security maximum 2',
+        'switchport port-security mac-address sticky',
+        #'switchport port-security mac-address',
+        'switchport port-security violation shutdown'
+        ]
 
 
 def handle_access_list(method, form, session):
@@ -473,14 +491,14 @@ def remote_execute(command, session, networks):
 
     print(command)
 
-    '''try:
+    try:
         connection = ConnectHandler(host=host, port=22,
                                     username=username, password=password,
                                     device_type='cisco_ios')
         
         output = connection.send_config_set(command)
-        connection.send_command('write memory')
+        #connection.send_command('write memory')
         print(output)
 
     except:
-        print('except')'''
+        print('except')

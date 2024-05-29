@@ -61,6 +61,37 @@
 </div>
 
 <div class="container">
+  <h3 align="center">Routers</h3>
+  <ul class="list-group" id="routers">
+
+    {% for router in user.routers %}
+
+    <li class="list-group-item d-flex justify-content-between align-items-center">
+
+      <div class="ms-2 me-auto">
+        <div class="fw-bold">{{ router.router_name }}</div>
+        {{ router.host }}
+      </div>
+      <form action="" method="POST" class="pe-2">
+        <button type="submit" class="btn btn-success align-center" name="connect_button"
+          value="{{ router.router_id}}">Connect</button>
+      </form>
+
+    </li>
+
+    {% endfor %}
+    <li class="list-group-item d-flex justify-content-between align-items-center">
+      <form action="" method="POST">
+        <div class="ms-2 me-auto">
+          <button type="submit" class="btn btn-success align-center" name="create_network_button"
+            value="create_network_button">Create new one</button>
+        </div>
+      </form>
+    </li>
+  </ul>
+</div>
+
+<div class="container">
   <h3 class="text-center">Manage</h3>
   <form action="" method="POST" class="pe-2">
     <button type="submit" class="btn btn-primary align-center" name="change_button"
@@ -80,16 +111,18 @@
 
     <button type="submit" class="btn btn-primary align-center" name="ntp_server_button"
       value="{{ session['network_id'] }}">NTP Server</button>
-      
+
     <button type="submit" class="btn btn-primary align-center" name="ntp_klient_button"
       value="{{ session['network_id'] }}">NTP Klient</button>
-      
+
     <button type="submit" class="btn btn-primary align-center" name="port_sec_button"
       value="{{ session['network_id'] }}">Port security</button>
 
     <button type="submit" class="btn btn-primary align-center" name="router_button"
       value="{{ session['network_id'] }}">Tilføj router</button>
   </form>
+
+
 </div>
 
 
