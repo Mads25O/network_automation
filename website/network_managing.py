@@ -283,16 +283,29 @@ def router():
 @login_required
 def ntp_klient():
     network_id = session["network_id"]
-    routers = Routers.query.filter_by(user_id=current_user.id, networks=network_id).all()
+    routers = Routers.query.filter_by(user_id=current_user.id, networks=network_id).all()        
 
-    if request.method == 'POST':
-        stratum_number = request.form.get('stratum_number')
-        tid = request.form.get('tid')
-        klient = request.form.get('klient')
+    result = handle_ntp_klient(request.method, request.form)
+    if result == None:
+        # Tager alle form nøgler og pakker dem ud som en key value pair arg
+        return render_template('network_managing/ntp_klient.html', 
+                            user=current_user, routers=routers, **request.form)
+    remote_execute(result, session, Networks)
 
-        
+    return redirect(url_for('network.connect'))
 
-    return render_template('network_managing/ntp_klient.html', user=current_user, routers=routers)
+
+def handle_ntp_klient(method, form):
+    if method != 'POST':
+        return None
+    
+    if not form.get('create_button'):
+        return None
+
+    return [
+        f'ntp server {form.get("server_ip")}',
+        f'ntp update-calender'
+    ]
 
 @network.route('/ntp-server', methods=['GET', 'POST'])
 @login_required
@@ -300,14 +313,31 @@ def ntp_server():
     network_id = session["network_id"]
     routers = Routers.query.filter_by(user_id=current_user.id, networks=network_id).all()
 
-    if request.method == 'POST':
-        stratum_number = request.form.get('stratum_number')
-        tid = request.form.get('tid')
-        klient = request.form.get('klient')
+    result = handle_ntp_server(request.method, request.form)
+    if result == None:
+        # Tager alle form nøgler og pakker dem ud som en key value pair arg
+        return render_template('network_managing/ntp_server.html', 
+                            user=current_user, routers=routers, **request.form)
+    
+    remote_execute(result, session, Networks)
 
+    return redirect(url_for('network.connect'))
+
+
+
+def handle_ntp_server(method, form):
+    if method != 'POST':
+        return None
+    
+    if not form.get('create_button'):
+        return None
+
+    return [
+        f'ntp server {form.get("server_ip")}',
+        f'ntp update-calender',
+        f'ntp master 0'
         
-
-    return render_template('network_managing/ntp_server.html', user=current_user, routers=routers)
+    ]
 
 @network.route('/port-security', methods=['GET', 'POST'])
 @login_required
