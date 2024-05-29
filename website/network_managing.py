@@ -197,147 +197,63 @@ def access_list():
 @login_required
 def vlans():
 
-    ## Netværk ###
-    network_id = session["network_id"]
-    network = Networks.query.filter_by(user_id=current_user.id, network_id=network_id).first()
-    network_name = network.network_name
-    host = network.host
-    username = network.username
-    password = network.password
-   
-    vlans = None
-    selected_interface = None
-    trunk_button = None
-    access_button = None
-    interfaces = None
-
-    send = False
-
-    command_config = []
-
-    trunk_dropdown = ['encapsulation', 'nonegotiate', 'native', 'allowed']
-
-    '''try:
-        connection = ConnectHandler(host=host, port=22,
-                                    username=username, password=password,
-                                    device_type='cisco_ios')
-                    
-        vlans = connection.send_command('sh vlan br', use_textfsm=True)
-        interfaces = connection.send_command('sh ip int br', use_textfsm=True)
-        session["vlans"] = vlans
-        session["interfaces"] = interfaces
-        
-        
-
-    except:
-        flash('Can\'t connect', category='error')'''
-
-    if request.method == 'POST':
-
-
-        vlan = request.form.get('vlan')
-        vlan_name = request.form.get('vlan_name')
-
-        switchport_mode = request.form.get('switchport_mode')
-        selected_interface = request.form.get('interfaces')
-        session["selected_interface"] = selected_interface
-
-        trunk_options = request.form.get('trunk_options')
-        trunk_user_input = request.form.get('trunk_user_input')
-        vlan_switchport = request.form.get('vlan_switchport')
-        
-
-        
-        
-
-
-        if request.form.get('access_button'):
-            access_button = True
-            swp_mode = 'access'
-            session["swp_mode"] = swp_mode
+    if request.form.get('access_button'):
+        swp_mode = 'access'
+        session["swp_mode"] = swp_mode
             
-        
-        elif request.form.get('trunk_button'):
-            trunk_button = True
-            swp_mode = 'trunk'
-            session["swp_mode"] = swp_mode
+    elif request.form.get('trunk_button'):
+        swp_mode = 'trunk'
+        print('trunk')
+        session["swp_mode"] = swp_mode
 
-        elif request.form.get('create_button'):
-            command_config = [f'vlan {vlan}', f'name {vlan_name}']
-            send = True
-            
-        elif request.form.get('send_button'):
-            swp_mode = session["swp_mode"]
-            command_config = [f'interface {selected_interface}', f'switchport mode {swp_mode}']
-            
-            if swp_mode == 'trunk':
-            
-                if trunk_options != '':
-                    print('trunk er ikke none')
-                    print(trunk_options)
-                    command_config.append(f'{trunk_options} {trunk_user_input}')
-            
-            if swp_mode == 'access':
-                
-                command_config.append(vlan_switchport)
-                
-            send = True
+    result = handle_vlan(request.method, request.form, session)
 
-        
-
-        
-            
-
-
-        if send == True:
-            first_element = command_config[0]
-            second_element = ' '.join(command_config[1:])
-            command_config = [first_element, second_element]
-            print(command_config)
-            try:
-                connection = ConnectHandler(host=host, port=22,
-                                    username=username, password=password,
-                                    device_type='cisco_ios')
-                    
-                output = connection.send_config_set(command_config)
-                print(output)
-                send = False
-        
-            except:
-                flash('Can\'t connect', category='error')
-            
-
-
-
-
-        
-
-
+    if result == None:
+        return render_template('network_managing/vlans.html', 
+                            user=current_user, **request.form, **session)
     
-    return render_template('network_managing/vlans.html', 
-                           user=current_user, 
-                           vlans=vlans, 
-                           interfaces=interfaces, 
-                           selected_interface=selected_interface, 
-                           access_button=access_button,
-                           trunk_button=trunk_button,
-                           trunk_dropdown=trunk_dropdown)
+    remote_execute(result, session, Networks)
+
+    return redirect(url_for('network.connect'))
 
 @network.route('/dhcp', methods=['GET', 'POST'])
 @login_required
 def dhcp():
     network_id = session["network_id"]
     routers = Routers.query.filter_by(user_id=current_user.id, networks=network_id).all()
-    if request.method == 'POST':
+    '''if request.method == 'POST':
         dhcp_name = request.form.get('dhcp_name')
         netværks_adresse = request.form.get('netværks_adresse')
         subnetmaske = request.form.get('subnetmaske')
         router = request.form.get('router')
-        dns_server = request.form.get('dns_server')
-
-        
+        dns_server = request.form.get('dns_server')'''
     
-    return render_template('network_managing/dhcp.html', user=current_user, routers=routers)
+
+
+    result = handle_dhcp(request.method, request.form)
+    if result == None:
+        # Tager alle form nøgler og pakker dem ud som en key value pair arg
+        return render_template('network_managing/dhcp.html', 
+                            user=current_user, routers=routers, **request.form)
+    remote_execute(result, session, Networks)
+    return redirect(url_for('network.connect'))
+
+def handle_dhcp(method, form):
+    if method != 'POST':
+        return None
+    
+    if not form.get('create_button'):
+        return None
+
+    command_exec = [
+        f'ip dhcp pool {form.get("dhcp_name")}',
+        f'network {form.get("netværks_adresse")}',
+        f'dns-server {form.get("dns_server")}',
+        f'default-router {form.get("router")}'
+    ]
+    
+
+    return command_exec
 
 @network.route('/router', methods=['GET', 'POST'])
 @login_required
@@ -402,17 +318,11 @@ def port_security():
 
 
 def handle_access_list(method, form, session):
-    # Netværk
-
-
     if method != 'POST':
         return None
     
     if not form.get('save_button'):
         return None
-    
-    network_id = session["network_id"]
-    network = Networks.query.filter_by(user_id=current_user.id, network_id=network_id).first()
 
     if session.get("extended_access", False):
         extended = 'true'
@@ -477,6 +387,43 @@ def handle_access_list(method, form, session):
     print(command_exec)
 
     return command_exec
+
+def handle_vlan(method, form, session):
+
+    swp_mode = session["swp_mode"]
+
+    command_config = []
+
+    if method != 'POST':
+        return None
+    
+    if not form.get('create_button'):
+        return None
+
+    if request.form.get('send_button'):
+        command_config = [f'interface {form.get("selected_interface")}', f'switchport mode {swp_mode}']
+        
+        if swp_mode == 'trunk':
+        
+            if form.get("trunk_options") != '':
+                print('trunk er ikke none')
+                command_config.append(f'{form.get("trunk_options")} {form.get("trunk_user_input")}')
+        
+        else:  
+            command_config.append(form.get("vlan_switchport"))
+        
+        command_exec = [' '.join(command_config)]
+        
+    else:
+        command = f'vlan {form.get("vlan")}', f'name {form.get("vlan_name")}'
+        
+
+    
+    command_exec = [command, ' '.join(command_config)]
+    
+    print(command_exec)
+
+    return command_exec
     
     
 def remote_execute(command, session, networks):
@@ -489,7 +436,7 @@ def remote_execute(command, session, networks):
 
     print(command)
 
-    try:
+    '''try:
         connection = ConnectHandler(host=host, port=22,
                                     username=username, password=password,
                                     device_type='cisco_ios')
@@ -499,4 +446,4 @@ def remote_execute(command, session, networks):
         print(output)
 
     except:
-        print('except')
+        print('except')'''

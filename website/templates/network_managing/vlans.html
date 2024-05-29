@@ -21,7 +21,7 @@
         
         <label for="interfaces">Vælg interface</label>
         <select name="interfaces" id="interfaces" class="form-select">
-            {% for interface in session["interfaces"] %}
+            {% for interface in interfaces %}
                 <option value="{{ interface['interface'] }}" {% if selected_interface == interface['interface'] %} selected {% endif %}>{{ interface['interface'] }}</option>
             {% endfor %}
         </select>
@@ -34,7 +34,7 @@
         <label for="trunk_options">Trunk conf (Optional)</label>
             <select name="trunk_options" id="trunk_options" class="form-select">
                 <option class="form-select" value=""></option>
-            {% for options in trunk_dropdown %}
+            {% for options in ['encapsulation', 'nonegotiate', 'native', 'allowed'] %}
                 <option class="form-select" value="{{ options }}">{{ options }}</option>
             {% endfor %}
             </select>
