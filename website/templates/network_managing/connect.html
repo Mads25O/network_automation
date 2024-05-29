@@ -78,8 +78,11 @@
     <button type="submit" class="btn btn-primary align-center" name="dhcp_button"
       value="{{ session['network_id'] }}">DHCP</button>
 
-    <button type="submit" class="btn btn-primary align-center" name="ntp_button"
-      value="{{ session['network_id'] }}">NTP</button>
+    <button type="submit" class="btn btn-primary align-center" name="ntp_server_button"
+      value="{{ session['network_id'] }}">NTP Server</button>
+      
+    <button type="submit" class="btn btn-primary align-center" name="ntp_klient_button"
+      value="{{ session['network_id'] }}">NTP Klient</button>
       
     <button type="submit" class="btn btn-primary align-center" name="port_sec_button"
       value="{{ session['network_id'] }}">Port security</button>

@@ -153,10 +153,15 @@ def connect():
         session["network_id"] = network_id
         return redirect(url_for('network.router'))
     
-    if request.form.get('ntp_button'):
-        network_id = request.form['ntp_button']
+    if request.form.get('ntp_server_button'):
+        network_id = request.form['ntp_server_button']
         session["network_id"] = network_id
-        return redirect(url_for('network.ntp'))
+        return redirect(url_for('network.ntp_server'))
+    
+    if request.form.get('ntp_klient_button'):
+        network_id = request.form['ntp_klient_button']
+        session["network_id"] = network_id
+        return redirect(url_for('network.ntp_klient'))
     
     if request.form.get('port_sec_button'):
         network_id = request.form['port_sec_button']
@@ -196,21 +201,11 @@ def access_list():
 @network.route('/vlans', methods=['GET', 'POST'])
 @login_required
 def vlans():
-
-    if request.form.get('access_button'):
-        swp_mode = 'access'
-        session["swp_mode"] = swp_mode
-            
-    elif request.form.get('trunk_button'):
-        swp_mode = 'trunk'
-        print('trunk')
-        session["swp_mode"] = swp_mode
-
     result = handle_vlan(request.method, request.form, session)
 
     if result == None:
         return render_template('network_managing/vlans.html', 
-                            user=current_user, **request.form, **session)
+                            user=current_user, **request.form,session=session)
     
     remote_execute(result, session, Networks)
 
@@ -284,9 +279,9 @@ def router():
     
     return render_template('network_managing/router.html', user=current_user)
 
-@network.route('/ntp', methods=['GET', 'POST'])
+@network.route('/ntp-klient', methods=['GET', 'POST'])
 @login_required
-def ntp():
+def ntp_klient():
     network_id = session["network_id"]
     routers = Routers.query.filter_by(user_id=current_user.id, networks=network_id).all()
 
@@ -297,7 +292,22 @@ def ntp():
 
         
 
-    return render_template('network_managing/ntp.html', user=current_user, routers=routers)
+    return render_template('network_managing/ntp_klient.html', user=current_user, routers=routers)
+
+@network.route('/ntp-server', methods=['GET', 'POST'])
+@login_required
+def ntp_server():
+    network_id = session["network_id"]
+    routers = Routers.query.filter_by(user_id=current_user.id, networks=network_id).all()
+
+    if request.method == 'POST':
+        stratum_number = request.form.get('stratum_number')
+        tid = request.form.get('tid')
+        klient = request.form.get('klient')
+
+        
+
+    return render_template('network_managing/ntp_server.html', user=current_user, routers=routers)
 
 @network.route('/port-security', methods=['GET', 'POST'])
 @login_required
@@ -397,33 +407,30 @@ def handle_vlan(method, form, session):
     if method != 'POST':
         return None
     
-    if not form.get('create_button'):
+    if request.form.get('access_button'):
+        session["swp_mode"] = 'access'
         return None
-
-    if request.form.get('send_button'):
-        command_config = [f'interface {form.get("selected_interface")}', f'switchport mode {swp_mode}']
-        
-        if swp_mode == 'trunk':
-        
-            if form.get("trunk_options") != '':
-                print('trunk er ikke none')
-                command_config.append(f'{form.get("trunk_options")} {form.get("trunk_user_input")}')
-        
-        else:  
-            command_config.append(form.get("vlan_switchport"))
-        
-        command_exec = [' '.join(command_config)]
-        
-    else:
-        command = f'vlan {form.get("vlan")}', f'name {form.get("vlan_name")}'
-        
-
+            
+    if request.form.get('trunk_button'):
+        session["swp_mode"] = 'trunk'
+        return None
+    if request.form.get('create_button'):
+        return [f'vlan {form.get("vlan")}', f'name {form.get("vlan_name")}']
     
-    command_exec = [command, ' '.join(command_config)]
-    
-    print(command_exec)
+    command_config = [
+        f'interface {form.get("selected_interface")}',
+        f'switchport mode {swp_mode}'
+        ]
 
-    return command_exec
+    if session.get("swp_mode",'')  == 'trunk' and form.get("trunk_options", '') != '':
+        print('trunk er ikke none')
+        command_config.append(f'{form.get("trunk_options")} {form.get("trunk_user_input")}')
+    
+    else:  
+        command_config.append(form.get("vlan_switchport"))
+    
+    return command_config
+
     
     
 def remote_execute(command, session, networks):
