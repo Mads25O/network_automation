@@ -27,7 +27,7 @@
         <select class="form-select" aria-label="Default select example" name="protocols" >
             
             <option {% if protocols == None %} selected {% endif %} value=""></option>
-            {% for protokol in protokoller %}
+            {% for protokol in ['ahp', 'eigrp', 'gre', 'icmp', 'igmp', 'ip', 'ipinip', 'nos', 'ospf', 'pcp', 'pim', 'tcp', 'udp'] %}
             <option {% if protocols == protokol %} selected {% endif %} value="{{ protokol }}">{{ protokol }}</option>
             {% endfor %}
         </select>
@@ -48,7 +48,7 @@
         <label for="destination">Destination</label>
         <select class="form-select" aria-label="Default select example" name="destination">
             <option {% if destination == None %} selected {% endif %} value=""></option>
-            {% for dest in destinations %}
+            {% for dest in ['any', 'eq', 'gt', 'host', 'lt', 'neq', 'range'] %}
                 
                 <option {% if destination == dest %} selected {% endif %} value="{{ dest }}">{{ dest }}</option>
             {% endfor %}
@@ -63,7 +63,7 @@
             <label for="packet">Packet pis</label>
             <select class="form-select" aria-label="Default select example" name="packet">
                 <option value=""></option>
-                {% for packet in packet_list %}
+                {% for packet in ['dscp', 'eq', 'fragments', 'gt', 'log', 'log-input', 'lt', 'neq', 'option', 'precedence', 'range', 'time-range', 'tos'] %}
                 <option value="{{ packet }}">{{ packet }}</option>
                 {% endfor %}
 

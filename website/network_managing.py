@@ -176,25 +176,22 @@ def connect():
 @login_required
 def access_list():
 
-    
-
-    dropdown_dict = {
-        'packet_list' : ['dscp', 'eq', 'fragments', 'gt', 'log', 'log-input', 'lt', 'neq', 'option', 'precedence', 'range', 'time-range', 'tos'],
-        'protokoller' : ['ahp', 'eigrp', 'gre', 'icmp', 'igmp', 'ip', 'ipinip', 'nos', 'ospf', 'pcp', 'pim', 'tcp', 'udp'],
-        'destinations' : ['any', 'eq', 'gt', 'host', 'lt', 'neq', 'range']
-    }
-
     if request.form.get('extended_button'):
             session['extended_access'] = True
 
     if request.form.get('standard_button'):
             session['extended_access'] = False
 
-    #handle_access_list(request.method, request.form, session)
-    # Tager alle form nøgler og pakker dem ud som en key value pair arg
-    print(request.form)
-    return render_template('network_managing/access-list.html', 
-                           **request.form, **dropdown_dict, **session)
+    result = handle_access_list(request.method, request.form, session)
+    if result == None:
+        # Tager alle form nøgler og pakker dem ud som en key value pair arg
+        return render_template('network_managing/access-list.html', 
+                            user=current_user, **request.form, **session)
+    
+    remote_execute(result, session, Networks)
+    # redirect til noget
+
+    return redirect(url_for('network.connect'))
 
 @network.route('/vlans', methods=['GET', 'POST'])
 @login_required
@@ -409,29 +406,27 @@ def handle_access_list(method, form, session):
 
 
     if method != 'POST':
-        return
+        return None
     
     if not form.get('save_button'):
-        return
+        return None
     
     network_id = session["network_id"]
     network = Networks.query.filter_by(user_id=current_user.id, network_id=network_id).first()
 
-    send = False
-
-    if session["extended_access"] == 'False':
-        extended = False
-    elif session["extended_access"] == 'True':
-        extended = True
+    if session.get("extended_access", False):
+        extended = 'true'
     else:
-        extended = False
+        extended = 'false'
 
     command = ''
     command_config = []
 
+
+
             
     ### Extended access liste lavet ###
-    if session['extended_access'] == 'True':
+    if session.get('extended_access', False):
         protocols = form.get("protocols")
         if form.get("custom_protocols") != '':
             protocols = form.get("custom_protocols")
@@ -453,7 +448,7 @@ def handle_access_list(method, form, session):
                 
             except:
                 flash('Port kan kun være tal', category='error')
-        # To-do return abort
+                return None
             
         else:
             command_config.append(f'{form.get("packet")}')
@@ -477,22 +472,31 @@ def handle_access_list(method, form, session):
         else:
             command_config.append(f'host {form.get("hostname")}')
 
-    print(command_config)
     command_exec = [command, ' '.join(command_config)]
     
     print(command_exec)
-    
-    
-    '''if send == True:
-        try:
-            connection = ConnectHandler(host=host, port=22,
-                                        username=username, password=password,
-                                        device_type='cisco_ios')
-            
-            output = connection.send_config_set(command_config)
-            save = connection.send_command('write memory')
-            print(output)
-            send = False
 
-        except:
-            pass'''
+    return command_exec
+    
+    
+def remote_execute(command, session, networks):
+
+    network_id = session["network_id"]
+    network = networks.query.filter_by(user_id=current_user.id, network_id=network_id).first()
+    host = network.host
+    username = network.username
+    password = network.password
+
+    print(command)
+
+    try:
+        connection = ConnectHandler(host=host, port=22,
+                                    username=username, password=password,
+                                    device_type='cisco_ios')
+        
+        output = connection.send_config_set(command)
+        connection.send_command('write memory')
+        print(output)
+
+    except:
+        print('except')
