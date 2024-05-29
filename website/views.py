@@ -44,6 +44,7 @@ def delete_note():
 @views.route('/networks', methods=['GET', 'POST'])
 @login_required
 def networks():
+
     if request.method == 'POST':
 
         if request.form.get('change_button'):

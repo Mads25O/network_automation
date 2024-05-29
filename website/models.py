@@ -34,3 +34,4 @@ class User(db.Model, UserMixin):
     password = db.Column(db.String(150))
     notes = db.relationship('Note')
     networks = db.relationship('Networks')
+    routers = db.relationship('Routers')

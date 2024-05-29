@@ -10,6 +10,7 @@ network = Blueprint('network', __name__, template_folder='templates/network_mana
 @network.route('/create-network', methods=['GET', 'POST'])
 @login_required
 def create_network():
+
     if request.method == 'POST':
         network_name = request.form.get('network_name')
         host = request.form.get('host')
@@ -96,7 +97,10 @@ def connect():
     username = network.username
     password = network.password
 
-    routers = Routers.query.filter_by(user_id=current_user.id).first()
+    routers = Routers.query.filter_by(user_id=current_user.id, networks=network_id).first()
+
+    user = current_user
+    print(user.routers)
 
     
 
