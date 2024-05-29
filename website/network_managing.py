@@ -358,13 +358,13 @@ def access_list():
 @login_required
 def vlans():
 
-    '''### Netværk ###
+    ## Netværk ###
     network_id = session["network_id"]
     network = Networks.query.filter_by(user_id=current_user.id, network_id=network_id).first()
     network_name = network.network_name
     host = network.host
     username = network.username
-    password = network.password'''
+    password = network.password
    
     vlans = None
     selected_interface = None
@@ -455,7 +455,7 @@ def vlans():
             second_element = ' '.join(command_config[1:])
             command_config = [first_element, second_element]
             print(command_config)
-            '''try:
+            try:
                 connection = ConnectHandler(host=host, port=22,
                                     username=username, password=password,
                                     device_type='cisco_ios')
@@ -465,7 +465,7 @@ def vlans():
                 send = False
         
             except:
-                flash('Can\'t connect', category='error')'''
+                flash('Can\'t connect', category='error')
             
 
 
@@ -555,6 +555,8 @@ def port_security():
         maximum = request.form.get('maximum')
         mac = request.form.get('mac')
         violation = request.form.get('violation')
+
+        
 
 
     return render_template('port_security.html', user=current_user, violations=violations)
