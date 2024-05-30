@@ -1,9 +1,10 @@
 {% extends "base.html" %}
-{% block title %}Access Lists{% endblock %}
+{% block title %}Access Lister{% endblock %}
 {% block content %}
 
 
 <div class="dropdown container mt-5">
+    <h1 class="text-center">Access Lister</h1>
     <form method="POST">
 
         <button type="submit" class="btn btn-primary" name="extended_button" value="extended_button">Extended</button>
@@ -92,7 +93,7 @@
         <br>
 
         {% endif %}
-        <br>
+        
         <button type="submit" class="btn btn-primary" name="save_button" value="save_button">Save</button>
     </form>
 </div>

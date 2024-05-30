@@ -1,4 +1,4 @@
 env/
-test/
 flask_session/
 __pycache__/
+website/__pycache__/

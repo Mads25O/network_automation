@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, flash, jsonify, redirect, url_for, session
 from flask_login import login_required, current_user
-from .models import Note, Networks, Routers
+from .models import Networks
 from . import db
 import json
 from netmiko import ConnectHandler
@@ -257,14 +257,12 @@ def handle_vlan(method, form, session):
 @network.route('/dhcp', methods=['GET', 'POST'])
 @login_required
 def dhcp():
-    network_id = session["network_id"]
-    routers = Routers.query.filter_by(user_id=current_user.id, networks=network_id).all()
 
     result = handle_dhcp(request.method, request.form)
     if result == None:
         # Tager alle form nøgler og pakker dem ud som en key value pair arg
         return render_template('network_managing/dhcp.html', 
-                            user=current_user, routers=routers, **request.form)
+                            user=current_user, **request.form)
     remote_execute(result, session, Networks)
     return redirect(url_for('network.connect'))
 
@@ -287,46 +285,16 @@ def handle_dhcp(method, form):
 
     return command_exec
 
-@network.route('/router', methods=['GET', 'POST'])
-@login_required
-def router():
-    
-    if request.method == 'POST':
-        router_name = request.form.get('router_name')
-        host = request.form.get('host')
-        username = request.form.get('username')
-        password = request.form.get('password')
-        networks = session["network_id"]
-        
-        
-
-        router = Routers.query.filter_by(user_id=current_user.id).count()
-        router_id = int(router) + 1
-        
-        new_router = Routers(router_id=router_id, router_name=router_name, host=host, 
-                               username=username, password=password, 
-                               user_id=current_user.id, networks=networks)
-        db.session.add(new_router)
-        db.session.commit()
-
-            
-
-        flash('Router tilføjet!', category='success')
-        return redirect(url_for('views.networks'))
-    
-    return render_template('network_managing/router.html', user=current_user)
 
 @network.route('/ntp-klient', methods=['GET', 'POST'])
 @login_required
 def ntp_klient():
-    network_id = session["network_id"]
-    routers = Routers.query.filter_by(user_id=current_user.id, networks=network_id).all()        
 
     result = handle_ntp_klient(request.method, request.form)
     if result == None:
         # Tager alle form nøgler og pakker dem ud som en key value pair arg
         return render_template('network_managing/ntp_klient.html', 
-                            user=current_user, routers=routers, **request.form)
+                            user=current_user, **request.form)
     remote_execute(result, session, Networks)
 
     return redirect(url_for('network.connect'))
@@ -347,14 +315,12 @@ def handle_ntp_klient(method, form):
 @network.route('/ntp-server', methods=['GET', 'POST'])
 @login_required
 def ntp_server():
-    network_id = session["network_id"]
-    routers = Routers.query.filter_by(user_id=current_user.id, networks=network_id).all()
 
     result = handle_ntp_server(request.method, request.form)
     if result == None:
         # Tager alle form nøgler og pakker dem ud som en key value pair arg
         return render_template('network_managing/ntp_server.html', 
-                            user=current_user, routers=routers, **request.form)
+                            user=current_user, **request.form)
     
     remote_execute(result, session, Networks)
 

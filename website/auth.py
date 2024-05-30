@@ -9,22 +9,29 @@ auth = Blueprint('auth', __name__)
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
+
     if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
-        
-        user = User.query.filter_by(username=username).first()
-        #user = User.query.filter(func.lower(username) == func.lower(username)).first()
-        
-        if user:
-            if check_password_hash(user.password, password):
-                flash('Logged in successfully!', category='success')
-                login_user(user, remember=True)
-                return redirect(url_for('views.home'))
+
+        if request.form.get('lav_bruger'):
+            return redirect(url_for('auth.register'))
+
+        if request.form.get('login'):
+
+            username = request.form.get('username')
+            password = request.form.get('password')
+                
+            user = User.query.filter_by(username=username).first()
+            #user = User.query.filter(func.lower(username) == func.lower(username)).first()
+                
+            if user:
+                if check_password_hash(user.password, password):
+                    flash('Logged in successfully!', category='success')
+                    login_user(user, remember=True)
+                    return redirect(url_for('views.home'))
+                else:
+                    flash('Incorrect password, try again.', category='error')
             else:
-                flash('Incorrect password, try again.', category='error')
-        else:
-            flash('User doesn\'t exist', category='error')
+                flash('User doesn\'t exist', category='error')
 
     return render_template('login.html', user=current_user)
 
