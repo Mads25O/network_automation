@@ -60,6 +60,7 @@
   </div>
 </div>
 
+<!--
 <div class="container">
   <h3 align="center">Routers</h3>
   <ul class="list-group" id="routers">
@@ -91,40 +92,44 @@
       </form>
     </li>
   </ul>
-</div>
+</div> 
+-->
 
-<div class="container">
+<div class="container border mt-3 mb-3 pb-3 rounded">
   <h3 class="text-center">Manage</h3>
-  <form action="" method="POST" class="pe-2">
-    <button type="submit" class="btn btn-primary align-center" name="change_button"
-      value="{{ session['network_id'] }}">Change settings</button>
+  <div class="">
+    <form action="" method="POST" class="pe-2 d-flex justify-content-center">
 
+      <button type="submit" class="btn btn-primary align-center m-2" name="hostname_button"
+        value="{{ session['network_id'] }}">Skift hostname</button>
 
-    <button type="submit" class="btn btn-primary align-center" name="access_button"
-      value="{{ session['network_id'] }}">Access List</button>
+      <button type="submit" class="btn btn-primary align-center m-2" name="access_button"
+        value="{{ session['network_id'] }}">Access List</button>
 
+      <button type="submit" class="btn btn-primary align-center m-2" name="vlan_button"
+        value="{{ session['network_id'] }}">VLANS</button>
 
-    <button type="submit" class="btn btn-primary align-center" name="vlan_button"
-      value="{{ session['network_id'] }}">VLANS</button>
+      <button type="submit" class="btn btn-primary align-center m-2" name="dhcp_button"
+        value="{{ session['network_id'] }}">DHCP</button>
 
+      <button type="submit" class="btn btn-primary align-center m-2" name="ntp_server_button"
+        value="{{ session['network_id'] }}">NTP Server</button>
 
-    <button type="submit" class="btn btn-primary align-center" name="dhcp_button"
-      value="{{ session['network_id'] }}">DHCP</button>
+      <button type="submit" class="btn btn-primary align-center m-2" name="ntp_klient_button"
+        value="{{ session['network_id'] }}">NTP Klient</button>
 
-    <button type="submit" class="btn btn-primary align-center" name="ntp_server_button"
-      value="{{ session['network_id'] }}">NTP Server</button>
+      <button type="submit" class="btn btn-primary align-center m-2" name="port_sec_button"
+        value="{{ session['network_id'] }}">Port security</button>
 
-    <button type="submit" class="btn btn-primary align-center" name="ntp_klient_button"
-      value="{{ session['network_id'] }}">NTP Klient</button>
-
-    <button type="submit" class="btn btn-primary align-center" name="port_sec_button"
-      value="{{ session['network_id'] }}">Port security</button>
-
+      <button type="submit" class="btn btn-success align-center m-2" name="gem_button"
+        value="{{ session['network_id'] }}">Gem</button>
+      <!--
     <button type="submit" class="btn btn-primary align-center" name="router_button"
       value="{{ session['network_id'] }}">Tilføj router</button>
-  </form>
+    -->
+    </form>
 
-
+  </div>
 </div>
 
 

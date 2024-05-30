@@ -33,7 +33,7 @@ def create_network():
         
 
         flash('Network created!', category='success')
-        return redirect(url_for('network.manage_networks'))
+        return redirect(url_for('views.networks'))
     return render_template('create_network.html', user=current_user)
 
 
@@ -65,7 +65,9 @@ def edit_network():
         if request.form['submit_button'] == 'delete':
             network = Networks.query.filter_by(user_id=current_user.id, network_id=network_id).delete()
             db.session.commit()
-            return redirect(url_for('network.manage_networks'))
+            flash('Network deleted', category='success')
+            return redirect(url_for('views.networks'))
+        
 
         else:
             new_network_name = request.form.get('network_name')
@@ -82,7 +84,7 @@ def edit_network():
             db.session.commit()
                 
 
-            return redirect(url_for('network.manage_networks'))
+            return redirect(url_for('views.networks'))
         
     return render_template('network_managing/edit_network.html', user=current_user, network_name=network_name, host=host, username=username, password=password)
 
@@ -96,13 +98,6 @@ def connect():
     host = network.host
     username = network.username
     password = network.password
-
-    routers = Routers.query.filter_by(user_id=current_user.id, networks=network_id).first()
-
-    user = current_user
-    print(user.routers)
-
-    
 
     interfaces = ['0', '0']
     vlans = ['0', '0']
@@ -120,61 +115,38 @@ def connect():
 
     except:
         flash('Can\'t connect.', category='error')
-
-
-    if request.form.get('change_button'):
-
-        network_id = request.form['change_button']
-        session["network_id"] = network_id
-        return redirect(url_for('network.edit_network'))
-        
-    if request.form.get('connect_button'):
-        network_id = request.form['connect_button']
-        session["network_id"] = network_id
-        return redirect(url_for('network.connect'))
-
+    
+    if request.form.get('hostname_button'):
+        return redirect(url_for('network.hostname'))
 
     if request.form.get('access_button'):
 
         network_id = request.form['access_button']
         session["network_id"] = network_id
         session["extended_access"] = 'False'
-
         return redirect(url_for('network.access_list'))
         
     if request.form.get('vlan_button'):
-
-        network_id = request.form['vlan_button']
-        session["network_id"] = network_id
         return redirect(url_for('network.vlans'))
 
-        
     if request.form.get('dhcp_button'):
-
-        
-        network_id = request.form['dhcp_button']
-        session["network_id"] = network_id
         return redirect(url_for('network.dhcp'))
 
     if request.form.get('router_button'):
-        network_id = request.form['router_button']
-        session["network_id"] = network_id
         return redirect(url_for('network.router'))
     
     if request.form.get('ntp_server_button'):
-        network_id = request.form['ntp_server_button']
-        session["network_id"] = network_id
         return redirect(url_for('network.ntp_server'))
     
     if request.form.get('ntp_klient_button'):
-        network_id = request.form['ntp_klient_button']
-        session["network_id"] = network_id
         return redirect(url_for('network.ntp_klient'))
     
     if request.form.get('port_sec_button'):
-        network_id = request.form['port_sec_button']
-        session["network_id"] = network_id
         return redirect(url_for('network.port_security'))
+
+    if request.form.get('gem_button'):
+        remote_execute('wr', session, Networks)
+        flash('Gemt!', category='success')
         
     
     return render_template('network_managing/connect.html', 
@@ -183,8 +155,36 @@ def connect():
                            host=host, username=username, 
                            password=password, 
                            interfaces=interfaces,
-                           vlans=vlans,
-                           routers=routers)
+                           vlans=vlans
+                           )
+
+@network.route('/hostname', methods = ['GET', 'POST'])
+@login_required
+def hostname():
+    
+    result = handle_hostname(request.method, request.form)
+    if result == None:
+        # Tager alle form nøgler og pakker dem ud som en key value pair arg
+        return render_template('network_managing/hostname.html', 
+                            user=current_user, **request.form)
+    
+    remote_execute(result, session, Networks)
+
+    return redirect(url_for('network.connect'))
+
+def handle_hostname(method, form):
+    if method != 'POST':
+        return None
+    
+    if not form.get('create_button'):
+        return None
+
+    command_exec = [
+        f'hostname {form.get("hostname")}',
+    ]
+    
+
+    return command_exec
 
 @network.route('/access-list', methods = ['GET', 'POST'])
 @login_required
@@ -220,19 +220,45 @@ def vlans():
 
     return redirect(url_for('network.connect'))
 
+def handle_vlan(method, form, session):
+
+    if session.get("swp_mode", None):
+        swp_mode = ''
+
+
+    command_config = []
+
+    if method != 'POST':
+        return None
+    
+    if request.form.get('access_button'):
+        session["swp_mode"] = 'access'
+        return None
+            
+    if request.form.get('trunk_button'):
+        session["swp_mode"] = 'trunk'
+        return None
+    if request.form.get('create_button'):
+        return [f'vlan {form.get("vlan")}', f'name {form.get("vlan_name")}']
+    
+    command_config = [
+        f'interface {form.get("interfaces")}',
+        f'switchport mode {session.get("swp_mode")}'
+        ]
+
+    if session.get("swp_mode",'')  == 'trunk' and form.get("trunk_options", '') != '':
+        command_config.append(f'switchport trunk {form.get("trunk_options")} vlan {form.get("trunk_options_two")} {form.get("trunk_user_input")}')
+    
+    else:
+        command_config.append(f'switchport access vlan {form.get("vlan_switchport")}')
+    
+    return command_config
+
 @network.route('/dhcp', methods=['GET', 'POST'])
 @login_required
 def dhcp():
     network_id = session["network_id"]
     routers = Routers.query.filter_by(user_id=current_user.id, networks=network_id).all()
-    '''if request.method == 'POST':
-        dhcp_name = request.form.get('dhcp_name')
-        netværks_adresse = request.form.get('netværks_adresse')
-        subnetmaske = request.form.get('subnetmaske')
-        router = request.form.get('router')
-        dns_server = request.form.get('dns_server')'''
-    
-
 
     result = handle_dhcp(request.method, request.form)
     if result == None:
@@ -253,7 +279,9 @@ def handle_dhcp(method, form):
         f'ip dhcp pool {form.get("dhcp_name")}',
         f'network {form.get("netværks_adresse")}',
         f'dns-server {form.get("dns_server")}',
-        f'default-router {form.get("router")}'
+        f'default-router {form.get("network")}',
+        f'domain-name {form.get("domain")}',
+        f'lease {form.get("lease")}'
     ]
     
 
@@ -313,7 +341,7 @@ def handle_ntp_klient(method, form):
 
     return [
         f'ntp server {form.get("server_ip")}',
-        f'ntp update-calender'
+        f'ntp update-calendar'
     ]
 
 @network.route('/ntp-server', methods=['GET', 'POST'])
@@ -342,10 +370,8 @@ def handle_ntp_server(method, form):
         return None
 
     return [
-        f'ntp server {form.get("server_ip")}',
-        f'ntp update-calender',
-        f'ntp master 0'
-        
+        f'ntp master {form.get("stratum_nummer")}',
+        f'ntp source {form.get("server_ip")}'
     ]
 
 @network.route('/port-security', methods=['GET', 'POST'])
@@ -368,13 +394,13 @@ def handle_port_security(method, form):
     
     if not form.get('create_button'):
         return None
-    
+
+    # Sikre man in the middle attack
     return [
-        f'interface range {form.get("from_interface")} - 3',
+        f'interface range {form.get("from_interface")} - {form.get("to_interface")}',
         'switchport port-security',
         'switchport port-security maximum 2',
         'switchport port-security mac-address sticky',
-        #'switchport port-security mac-address',
         'switchport port-security violation shutdown'
         ]
 
@@ -450,38 +476,7 @@ def handle_access_list(method, form, session):
 
     return command_exec
 
-def handle_vlan(method, form, session):
 
-    swp_mode = session["swp_mode"]
-
-    command_config = []
-
-    if method != 'POST':
-        return None
-    
-    if request.form.get('access_button'):
-        session["swp_mode"] = 'access'
-        return None
-            
-    if request.form.get('trunk_button'):
-        session["swp_mode"] = 'trunk'
-        return None
-    if request.form.get('create_button'):
-        return [f'vlan {form.get("vlan")}', f'name {form.get("vlan_name")}']
-    
-    command_config = [
-        f'interface {form.get("selected_interface")}',
-        f'switchport mode {swp_mode}'
-        ]
-
-    if session.get("swp_mode",'')  == 'trunk' and form.get("trunk_options", '') != '':
-        print('trunk er ikke none')
-        command_config.append(f'{form.get("trunk_options")} {form.get("trunk_user_input")}')
-    
-    else:  
-        command_config.append(form.get("vlan_switchport"))
-    
-    return command_config
 
     
     
@@ -501,8 +496,8 @@ def remote_execute(command, session, networks):
                                     device_type='cisco_ios')
         
         output = connection.send_config_set(command)
-        #connection.send_command('write memory')
+        # connection.send_command('write memory')
         print(output)
 
     except:
-        print('except')
+        flash('Blev ikke sendt til netværket, da der opstod problemer.', category='error')

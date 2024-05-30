@@ -18,11 +18,12 @@
     <br>
     <h3>Link VLANS</h3>
     <form action="" method="POST" clas="pe-2">
-        
+
         <label for="interfaces">Vælg interface</label>
         <select name="interfaces" id="interfaces" class="form-select">
             {% for interface in session.interfaces %}
-                <option value="{{ interface.interface }}" {% if selected_interface == interface %} selected {% endif %}>{{ interface.interface }}</option>
+            <option value="{{ interface.interface }}" {% if selected_interface==interface %} selected {% endif %}>{{
+                interface.interface }}</option>
             {% endfor %}
         </select>
         <label for="switchport_mode">Switchport mode</label>
@@ -32,25 +33,44 @@
         <br>
         {% if trunk_button %}
         <label for="trunk_options">Trunk conf (Optional)</label>
-            <select name="trunk_options" id="trunk_options" class="form-select">
-                <option class="form-select" value=""></option>
-            {% for options in ['encapsulation', 'nonegotiate', 'native', 'allowed'] %}
-                <option class="form-select" value="{{ options }}">{{ options }}</option>
+        <select name="trunk_options" id="trunk_options" class="form-select">
+            <option class="form-select" value=""></option>
+            {% for options in ['native', 'allowed', 'pruning'] %}
+            <option class="form-select" value="{{ options }}">{{ options }}</option>
             {% endfor %}
-            </select>
-            <label for="trunk_user_input">Trunk user input (Optional)</label>
-            <input type="text" name="trunk_user_input" id="trunk_user_input" class="form-control mb-3">
+        </select>
+
+        <label for="trunk_options_two">Trunk conf (Optional)</label>
+        <select name="trunk_options_two" id="trunk_options_two" class="form-select">
+            <option class="form-select" value=""></option>
+            {% for options in ['WORD', 'add', 'all', 'except', 'none', 'remove'] %}
+            <option class="form-select" value="{{ options }}">{{ options }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="trunk_user_input">VLAN</label>
+        <select name="trunk_user_input" id="trunk_user_input" class="form-select">
+            {% for vlan in session["vlans"] %}
+            <option class="form-select" value="{{ vlan['vlan_id'] }}">{{ vlan['vlan_name'] + ' ' + vlan['vlan_id'] }}
+            </option>
+            {% endfor %}
+        </select>
+        
+        <!--<input type="text" name="trunk_user_input" id="trunk_user_input" class="form-control mb-3">-->
         {% elif access_button %}
         <br>
+
         <label for="vlan_switchport">Vælg VLAN</label>
-            <select name="vlan_switchport" id="vlan_switchport" class="form-select">
+        <select name="vlan_switchport" id="vlan_switchport" class="form-select">
             {% for vlan in session["vlans"] %}
-                <option class="form-select" value="{{ vlan['vlan_name'] + ' ' + vlan['vlan_id'] }}">{{ vlan['vlan_name'] + ' ' + vlan['vlan_id'] }}</option>
+            <option class="form-select" value="{{ vlan['vlan_id'] }}">{{ vlan['vlan_name'] + ' ' + vlan['vlan_id'] }}
+            </option>
             {% endfor %}
-            </select>
+        </select>
+        
         {% endif %}
         <br>
-        <button type="submit" class="btn btn-primary" name="send_button" value="send_button">Send</button>
+        <button type="submit" class="btn btn-primary mb-3" name="send_button" value="send_button">Send</button>
     </form>
 </div>
 {% endblock %}

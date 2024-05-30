@@ -11,10 +11,11 @@
             {% endfor %}
         </select>
 
-        <!--<label for="to_interface">Interface</label>
-        <select name="to_interface" id="to_interface" class="form-select">
+        <label for="to_interface">Hvor til?</label>
+        <input type="text" name="to_interface" id="to_interface" class="form-control">
+        <!--<select name="to_interface" id="to_interface" class="form-select">
             {% for interface in session["interfaces"] %}
-                <option value="{{ loop.index }}" {% if selected_interface == interface['interface'] %} selected {% endif %}>{{ interface['interface'] }}</option>
+                <option value="{{ interface['interface'] }}" {% if selected_interface == interface['interface'] %} selected {% endif %}>{{ interface['interface'] }}</option>
             {% endfor %}
         </select>-->
 

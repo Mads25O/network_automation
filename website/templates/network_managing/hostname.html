@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Hostname{% endblock %}
+{% block content %}
+<div class="container">
+    <h1>Hostname</h1>
+    <form action="" method="POST" class="pe-2">
+        <label for="hostname">Hostname</label>
+        <input type="text" name="hostname" id="hostname" class="form-control">
+
+        <button type="submit" class="btn btn-primary mt-2" name="create_button" value="create_button">Create</button>
+    </form>
+</div>
+{% endblock %}

@@ -14,15 +14,21 @@
         <label for="subnetmaske">Subnetmaske</label>
         <input type="text" name="subnetmaske" id="subnetmaske" class="form-control">
 
-        <label for="router">Router</label>
-        <select class="form-select" aria-label="Default select example" name="router" id="router">
-            {% for router in routers %}
-            <option value="{{ router.router_name }}">{{ router.router_name + ' ' + router.host }}</option>
+        <label for="network">Network</label>
+        <select class="form-select" aria-label="Default select example" name="network" id="network">
+            {% for network in user.networks %}
+            <option value="{{ network.network_name }}">{{ network.network_name + ' ' + network.host }}</option>
             {% endfor %}
         </select>
 
         <label for="dns_server">DNS server</label>
         <input type="text" name="dns_server" id="dns_server" class="form-control">
+
+        <label for="domain">Domain name</label>
+        <input type="text" name="domain" id="domian" class="form-control">
+
+        <label for="lease">Lease (Dage)</label>
+        <input type="text" name="lease" id="lease" class="form-control">
 
         <button type="submit" class="btn btn-primary mt-2" name="create_button" value="create_button">Create</button>
     </form>
