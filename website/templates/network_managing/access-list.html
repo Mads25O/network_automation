@@ -11,88 +11,127 @@
         <br>
 
         <label for="access_list_name">Access List Name</label>
-        <input type="text" name="access_list_name" id="access_list_name" class="form-control" value={% if access_list_name != None %} "{{ access_list_name }}" {% else %} "" {% endif %}>
+        <input type="text" name="access_list_name" id="access_list_name" class="form-control" value={% if
+            access_list_name !=None %} "{{ access_list_name }}" {% else %} "" {% endif %}>
         <br>
-        
-            <label for="permit_or_deny">Permit or deny</label>
-            <select class="form-select" aria-label="Default select example" name="permit_or_deny">
-                <option {% if permit_or_deny == None %} selected {% endif %} value=""></option>
-                <option {% if permit_or_deny == 'permit' %} selected {% endif %} value="permit">Permit</option>
-                <option {% if permit_or_deny == 'deny' %} selected {% endif %} value="deny">Deny</option>
-            </select>
-            <br>
+
+        <label for="permit_or_deny">Permit or deny</label>
+        <select class="form-select" aria-label="Default select example" name="permit_or_deny">
+            <option {% if permit_or_deny==None %} selected {% endif %} value=""></option>
+            <option {% if permit_or_deny=='permit' %} selected {% endif %} value="permit">permit</option>
+            <option {% if permit_or_deny=='deny' %} selected {% endif %} value="deny">deny</option>
+        </select>
+        <br>
 
         {% if extended_access | default(False) %}
         <label for="protocols">Protokoller</label>
-        <select class="form-select" aria-label="Default select example" name="protocols" >
-            
-            <option {% if protocols == None %} selected {% endif %} value=""></option>
-            {% for protokol in ['ahp', 'eigrp', 'gre', 'icmp', 'igmp', 'ip', 'ipinip', 'nos', 'ospf', 'pcp', 'pim', 'tcp', 'udp'] %}
-            <option {% if protocols == protokol %} selected {% endif %} value="{{ protokol }}">{{ protokol }}</option>
+        <select class="form-select" aria-label="Default select example" name="protocols">
+
+            <option {% if protocols==None %} selected {% endif %} value=""></option>
+            {% for protokol in ['ahp', 'eigrp', 'gre', 'icmp', 'igmp', 'ip', 'ipinip', 'nos', 'ospf', 'pcp', 'pim',
+            'tcp', 'udp'] %}
+            <option {% if protocols==protokol %} selected {% endif %} value="{{ protokol }}">{{ protokol }}</option>
             {% endfor %}
         </select>
         <br>
 
         <label for="custom_protocols">Tast selv protokol (0-255)</label>
-        <input type="text" name="custom_protocols" id="custom_protocols" class="form-control" value={% if custom_protocols != None %} "{{ custom_protocols }}" {% else %} "" {% endif %}>
+        <input type="text" name="custom_protocols" id="custom_protocols" class="form-control" value={% if
+            custom_protocols !=None %} "{{ custom_protocols }}" {% else %} "" {% endif %}>
+        <br>
+
+        <label for="host_name">Hostname</label>
+        <input type="text" name="host_name" id="host_name" class="form-control" value={% if
+            host_name !=None %} "{{ host_name }}" {% else %} "" {% endif %}>
+        <br>
+
+        <label for="wildcard">Wildcard address</label>
+        <input type="text" name="wildcard" id="wildcard" class="form-control" value={% if
+            wildcard !=None %} "{{ wildcard }}" {% else %} "" {% endif %}>
         <br>
 
         <label for="source">Source</label>
         <select class="form-select" aria-label="Default select example" name="source">
-            <option {% if source == None %} selected {% endif %} value=""></option>
-            <option {% if source == 'any' %} selected {% endif %} value="any">any</option>
-            <option {% if source == 'host' %} selected {% endif %} value="host">host</option>
+            <option {% if source==None %} selected {% endif %} value=""></option>
+            <option {% if source=='any' %} selected {% endif %} value="any">any</option>
+            <option {% if source=='host' %} selected {% endif %} value="host">host</option>
         </select>
         <br>
 
-        <label for="destination">Destination</label>
+        <!--<label for="destination">Destination</label>
         <select class="form-select" aria-label="Default select example" name="destination">
-            <option {% if destination == None %} selected {% endif %} value=""></option>
+            <option {% if destination==None %} selected {% endif %} value=""></option>
             {% for dest in ['any', 'eq', 'gt', 'host', 'lt', 'neq', 'range'] %}
-                
-                <option {% if destination == dest %} selected {% endif %} value="{{ dest }}">{{ dest }}</option>
+
+            <option {% if destination==dest %} selected {% endif %} value="{{ dest }}">{{ dest }}</option>
+            {% endfor %}
+        </select>
+        <br>
+
+        {% if (destination | default('')) == '' %}
+        <button type="submit" class="btn btn-primary" name="next_button" value="next_button">Næste</button>
+        <br>
+
+        {% elif (destination | default('')) == 'any' %}
+
+        <label for="packet">Packet pis</label>
+        <select class="form-select" aria-label="Default select example" name="packet">
+            <option value=""></option>
+            {% for packet in ['dscp', 'eq', 'fragments', 'gt', 'log', 'log-input', 'lt', 'neq', 'option', 'precedence',
+            'range', 'time-range', 'tos'] %}
+            <option value="{{ packet }}">{{ packet }}</option>
+            {% endfor %}
+
+        </select>
+
+        {% elif (destination | default('')) == 'host' %}
+
+        <label for="host_pis">Host</label>
+        <input type="text" name="host_pis" id="host_pis" class="form-control" value="">
+        {% elif (destination | default('')) != 'any' or (destination | default('')) != 'host' %}
+        <label for="port">Port (0-65535)</label>
+        <input type="text" name="port" id="port" class="form-control" value="">
+
+        {% endif %}-->
+        {% else %}
+        <label for="any_or_host">Any or host</label>
+        <select class="form-select" aria-label="Default select example" name="any_or_host">
+            <option {% if any_or_host==None %} selected {% endif %} value=""></option>
+            <option {% if any_or_host=='any' %} selected {% endif %} value="any">Any</option>
+            <option {% if any_or_host=='host' %} selected {% endif %} value="host">Host</option>
+        </select>
+
+        <br>
+        <label for="hostname">Hostname</label>
+        <input type="text" name="hostname" id="hostname" class="form-control" value={% if hostname !=None %}"{{ hostname
+            }}" {% else %} "" {% endif %}>
+
+        {% endif %}
+
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" value="ja" name="ja_eller_nej" id="ja_eller_nej">
+            <label class="form-check-label" for="ja_eller_nej">
+              Skal 'permit ip any any' sættes ind til sidst?
+            </label>
+        </div>
+        <br>
+        <label for="interface">Placer ACL på interface</label>
+        <select name="interface" id="interface" class="form-select">
+            {% for interface in session["interfaces"] %}
+                <option value="{{ interface['interface'] }}" {% if selected_interface == interface['interface'] %} selected {% endif %}>{{ interface['interface'] }}</option>
+            {% endfor %}
+        </select>
+        <br>
+
+        <label for="in_or_out">In eller out</label>
+        <select name="in_or_out" id="in_or_out" class="form-select">
+            {% for option in ['in', 'out'] %}
+                <option value="{{ option }}" {% if selected_interface == option %} selected {% endif %}>{{ option }}</option>
             {% endfor %}
         </select>
         <br>
         
-            {% if (destination | default('')) == '' %}  
-            <button type="submit" class="btn btn-primary" name="next_button" value="next_button">Næste</button>
-            
-            {% elif (destination | default('')) == 'any' %}
-            
-            <label for="packet">Packet pis</label>
-            <select class="form-select" aria-label="Default select example" name="packet">
-                <option value=""></option>
-                {% for packet in ['dscp', 'eq', 'fragments', 'gt', 'log', 'log-input', 'lt', 'neq', 'option', 'precedence', 'range', 'time-range', 'tos'] %}
-                <option value="{{ packet }}">{{ packet }}</option>
-                {% endfor %}
 
-            </select>
-            
-            {% elif (destination | default('')) == 'host' %}
-                
-                <label for="host_pis">Host</label>
-                <input type="text" name="host_pis" id="host_pis" class="form-control" value="">
-            {% elif (destination | default('')) != 'any' or (destination | default('')) != 'host' %}
-                <label for="port">Port (0-65535)</label>
-                <input type="text" name="port" id="port" class="form-control" value="">
-            
-            {% endif %}
-        {% else %}
-            <label for="any_or_host">Any or host</label>
-            <select class="form-select" aria-label="Default select example" name="any_or_host">
-                <option {% if any_or_host == None %} selected {% endif %} value=""></option>
-                <option {% if any_or_host == 'any' %} selected {% endif %} value="any">Any</option>
-                <option {% if any_or_host == 'host' %} selected {% endif %} value="host">Host</option>
-            </select>
-        
-        <br>
-        <label for="hostname">Hostname</label>
-        <input type="text" name="hostname" id="hostname" class="form-control" value={% if hostname != None %}"{{ hostname }}" {% else %} "" {% endif %}>
-        <br>
-
-        {% endif %}
-        <br>
         <button type="submit" class="btn btn-primary" name="save_button" value="save_button">Save</button>
     </form>
 </div>

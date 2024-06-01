@@ -11,30 +11,33 @@ network = Blueprint('network', __name__, template_folder='templates/network_mana
 @login_required
 def create_network():
 
-    if request.method == 'POST':
-        network_name = request.form.get('network_name')
-        host = request.form.get('host')
-        username = request.form.get('username')
-        password = request.form.get('password')
-        
-        
+    if request.method != 'POST':
+        return render_template('create_network.html', user=current_user)
 
-        network = Networks.query.filter_by(user_id=current_user.id).count()
-        network_id = int(network) + 1
-        
-        new_network = Networks(network_id=network_id, network_name=network_name, host=host, 
-                               username=username, password=password, 
-                               user_id=current_user.id)
-        
+    
+    network_name = request.form.get('network_name')
+    host = request.form.get('host')
+    username = request.form.get('username')
+    password = request.form.get('password')
+    
+    
 
-        db.session.add(new_network)
-        db.session.commit()
+    network = Networks.query.filter_by(user_id=current_user.id).count()
+    network_id = int(network) + 1
+    
+    new_network = Networks(network_id=network_id, network_name=network_name, host=host, 
+                            username=username, password=password, 
+                            user_id=current_user.id)
+    
 
-        
+    db.session.add(new_network)
+    db.session.commit()
 
-        flash('Network created!', category='success')
-        return redirect(url_for('views.networks'))
-    return render_template('create_network.html', user=current_user)
+    
+
+    flash('Network created!', category='success')
+    return redirect(url_for('views.networks'))
+    
 
 
 '''@network.route('/manage-network', methods=['GET', 'POST'])
@@ -276,12 +279,10 @@ def handle_dhcp(method, form):
         return None
 
     command_exec = [
+        f'ip dhcp excluded-address {form.get("exclude")}',
         f'ip dhcp pool {form.get("dhcp_name")}',
         f'network {form.get("netværks_adresse")}',
-        f'dns-server {form.get("dns_server")}',
-        f'default-router {form.get("network")}',
-        f'domain-name {form.get("domain")}',
-        f'lease {form.get("lease")}'
+        f'default-router {form.get("network")}'
     ]
     
 
@@ -340,8 +341,7 @@ def handle_ntp_klient(method, form):
         return None
 
     return [
-        f'ntp server {form.get("server_ip")}',
-        f'ntp update-calendar'
+        f'ntp server {form.get("server_ip")}'
     ]
 
 @network.route('/ntp-server', methods=['GET', 'POST'])
@@ -371,7 +371,8 @@ def handle_ntp_server(method, form):
 
     return [
         f'ntp master {form.get("stratum_nummer")}',
-        f'ntp source {form.get("server_ip")}'
+        'ntp update-calendar',
+        f'ntp server {form.get("server_ip")}'
     ]
 
 @network.route('/port-security', methods=['GET', 'POST'])
@@ -432,8 +433,10 @@ def handle_access_list(method, form, session):
         command = f'ip access-list extended {form.get("access_list_name")}'
         command_config.append(form.get("permit_or_deny"))
         command_config.append(protocols)
+        command_config.append(form.get("host_name"))
+        command_config.append(form.get("wildcard"))
         command_config.append(form.get("source"))
-        command_config.append(form.get("destination"))
+        '''command_config.append(form.get("destination"))
 
         if form.get("host_pis") != None:
             command_config.append(f'{form.get("host_pis")}')
@@ -449,7 +452,7 @@ def handle_access_list(method, form, session):
                 return None
             
         else:
-            command_config.append(f'{form.get("packet")}')
+            command_config.append(f'{form.get("packet")}')'''
     
 
     ### Standard access liste laves ###
@@ -469,10 +472,14 @@ def handle_access_list(method, form, session):
 
         else:
             command_config.append(f'host {form.get("hostname")}')
-
-    command_exec = [command, ' '.join(command_config)]
     
-    print(command_exec)
+    command_exec = [command, ' '.join(command_config)]
+    if form.get('ja_eller_nej'):
+        command_exec.append('permit ip any any')
+    command_exec.append(f'int {form.get("interface")}')
+    command_exec.append(f'ip access-group {form.get("access_list_name")} {form.get("in_or_out")}')
+    
+    
 
     return command_exec
 
