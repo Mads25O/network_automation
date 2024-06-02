@@ -258,7 +258,7 @@ def remote_execute(command, session, networks):
 
     print(command)
 
-    try:
+    '''try:
         connection = ConnectHandler(host=host, port=22,
                                     username=username, password=password,
                                     device_type='cisco_ios')
@@ -267,4 +267,4 @@ def remote_execute(command, session, networks):
         print(output)   
 
     except:
-        flash('Blev ikke sendt til netværket, da der opstod problemer.', category='error')
+        flash('Blev ikke sendt til netværket, da der opstod problemer.', category='error')'''
