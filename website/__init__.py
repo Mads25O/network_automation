@@ -25,7 +25,7 @@ def create_app():
     app.register_blueprint(auth, url_prefix='/')
     app.register_blueprint(network, url_prefix='/networks')
 
-    from .models import User, Note, Networks
+    from .models import User, Networks
     
 
     with app.app_context():

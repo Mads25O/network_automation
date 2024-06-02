@@ -1,25 +1,24 @@
 {% extends "base.html" %}
 {% block title %}Port security{% endblock %}
 {% block content %}
-<div class="container">
-    <h1>Port security</h1>
-    <form action="" method="POST" class="pe-2">
-        <label for="from_interface">Interface</label>
-        <select name="from_interface" id="from_interface" class="form-select">
-            {% for interface in session["interfaces"] %}
-                <option value="{{ interface['interface'] }}" {% if selected_interface == interface['interface'] %} selected {% endif %}>{{ interface['interface'] }}</option>
-            {% endfor %}
-        </select>
 
-        <label for="to_interface">Hvor til?</label>
-        <input type="text" name="to_interface" id="to_interface" class="form-control">
-        <!--<select name="to_interface" id="to_interface" class="form-select">
-            {% for interface in session["interfaces"] %}
-                <option value="{{ interface['interface'] }}" {% if selected_interface == interface['interface'] %} selected {% endif %}>{{ interface['interface'] }}</option>
-            {% endfor %}
-        </select>-->
-
-        <button type="submit" class="btn btn-primary mt-2" name="create_button" value="create_button">Create</button>
-    </form>
+<div class="back-div">
+    <a class="back" href="{{ url_for('network.connect') }}"><< Tilbage</a>
 </div>
+
+<h1 class="fw-bold text-center">Port security</h1>
+<form action="" method="POST" class="pe-2">
+    <label for="from_interface">Interface</label>
+    <select name="from_interface" id="from_interface" class="form-select">
+        {% for interface in session["interfaces"] %}
+        <option value="{{ interface['interface'] }}" {% if selected_interface==interface['interface'] %} selected {%
+            endif %}>{{ interface['interface'] }}</option>
+        {% endfor %}
+    </select>
+
+    <label for="to_interface">Hvor til?</label>
+    <input type="text" name="to_interface" id="to_interface" class="form-control">
+    <button type="submit" class="btn btn-primary mt-2" name="create_button" value="create_button">Create</button>
+</form>
+
 {% endblock %}

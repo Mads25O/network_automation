@@ -1,15 +1,18 @@
 {% extends "base.html" %}
 {% block title %}NTP{% endblock %}
 {% block content %}
-<div class="container">
-    <h1>NTP</h1>
-    <h3>Lav en NTP klient</h3>
-    <form action="" method="POST" class="pe-2">
-        <!-- Dropdown med routere, hvis der er tid -->
-        <label for="server_ip">Optag tid fra</label>
-        <input type="text" name="server_ip" id="server_ip" class="form-control">
 
-        <button type="submit" class="btn btn-primary mt-2" name="create_button" value="create_button">Create</button>
-    </form>
+<div class="back-div">
+    <a class="back" href="{{ url_for('network.connect') }}"><< Tilbage</a>
 </div>
+
+<h1 class="fw-bold text-center">NTP</h1>
+<h3>Lav en NTP klient</h3>
+<form action="" method="POST" class="pe-2">
+    <label for="server_ip">Optag tid fra</label>
+    <input type="text" name="server_ip" id="server_ip" class="form-control">
+
+    <button type="submit" class="btn btn-primary mt-2" name="create_button" value="create_button">Create</button>
+</form>
+
 {% endblock %}

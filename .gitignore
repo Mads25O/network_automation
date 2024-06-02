@@ -3,5 +3,4 @@ test/
 flask_session/
 __pycache__/
 website/__pycache__/
-
-website/__pycache__/
+instance/

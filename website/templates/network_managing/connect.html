@@ -2,9 +2,9 @@
 {% block title %}Connect to network{% endblock %}
 {% block content %}
 
-<h1>Connection</h1>
-<div class="container mt-4 border rounded">
-  <h3 class="text-center">Network information</h3>
+<h1 class="fw-bold text-center">{{ network_name}}</h1>
+<div class="mt-4 border rounded">
+  <h3 class="text-center">Network information for {{ network_name }}</h3>
   <div class="row row-cols-2">
     <div class="col">
       <h2 class="text-center">Interfaces</h2>
@@ -33,7 +33,7 @@
     </div>
 
     <div class="col">
-      <h3 class="text-center">VLANS</h3>
+      <h2 class="text-center">VLANS</h2>
       <div class="table-container table-scrollable">
         <table class="table table-striped">
           <thead>
@@ -60,43 +60,8 @@
   </div>
 </div>
 
-<!--
-<div class="container">
-  <h3 align="center">Routers</h3>
-  <ul class="list-group" id="routers">
-
-    {% for router in user.routers %}
-
-    <li class="list-group-item d-flex justify-content-between align-items-center">
-
-      <div class="ms-2 me-auto">
-        <div class="fw-bold">{{ router.router_name }}</div>
-        {{ router.host }}
-        <div class="fw-bold">Connected</div>
-        {{ router.networks }}
-      </div>
-      <form action="" method="POST" class="pe-2">
-        <button type="submit" class="btn btn-success align-center" name="connect_button"
-          value="{{ router.router_id}}">Connect</button>
-      </form>
-
-    </li>
-
-    {% endfor %}
-    <li class="list-group-item d-flex justify-content-between align-items-center">
-      <form action="" method="POST">
-        <div class="ms-2 me-auto">
-          <button type="submit" class="btn btn-success align-center" name="create_network_button"
-            value="create_network_button">Create new one</button>
-        </div>
-      </form>
-    </li>
-  </ul>
-</div> 
--->
-
 <div class="container border mt-3 mb-3 pb-3 rounded">
-  <h3 class="text-center">Manage</h3>
+  <h3 class="text-center">Konfigurere</h3>
   <div class="">
     <form action="" method="POST" class="pe-2 d-flex justify-content-center">
 
@@ -123,15 +88,8 @@
 
       <button type="submit" class="btn btn-success align-center m-2" name="gem_button"
         value="{{ session['network_id'] }}">Gem</button>
-      <!--
-    <button type="submit" class="btn btn-primary align-center" name="router_button"
-      value="{{ session['network_id'] }}">Tilføj router</button>
-    -->
     </form>
-
   </div>
 </div>
-
-
 
 {% endblock %}

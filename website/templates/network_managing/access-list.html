@@ -2,8 +2,12 @@
 {% block title %}Access Lists{% endblock %}
 {% block content %}
 
-
-<div class="dropdown container mt-5">
+<div class="back-div">
+    <a class="back" href="{{ url_for('network.connect') }}">
+        << Tilbage</a>
+</div>
+<h1 class="fw-bold text-center">Access lister</h1>
+<div class="dropdown container mt-5 mb-3 manage p-4 rounded">
     <form method="POST">
 
         <button type="submit" class="btn btn-primary" name="extended_button" value="extended_button">Extended</button>
@@ -41,13 +45,13 @@
         <br>
 
         <label for="host_name">Hostname</label>
-        <input type="text" name="host_name" id="host_name" class="form-control" value={% if
-            host_name !=None %} "{{ host_name }}" {% else %} "" {% endif %}>
+        <input type="text" name="host_name" id="host_name" class="form-control" value={% if host_name !=None
+            %} "{{ host_name }}" {% else %} "" {% endif %}>
         <br>
 
         <label for="wildcard">Wildcard address</label>
-        <input type="text" name="wildcard" id="wildcard" class="form-control" value={% if
-            wildcard !=None %} "{{ wildcard }}" {% else %} "" {% endif %}>
+        <input type="text" name="wildcard" id="wildcard" class="form-control" value={% if wildcard !=None
+            %} "{{ wildcard }}" {% else %} "" {% endif %}>
         <br>
 
         <label for="source">Source</label>
@@ -56,43 +60,8 @@
             <option {% if source=='any' %} selected {% endif %} value="any">any</option>
             <option {% if source=='host' %} selected {% endif %} value="host">host</option>
         </select>
-        <br>
 
-        <!--<label for="destination">Destination</label>
-        <select class="form-select" aria-label="Default select example" name="destination">
-            <option {% if destination==None %} selected {% endif %} value=""></option>
-            {% for dest in ['any', 'eq', 'gt', 'host', 'lt', 'neq', 'range'] %}
 
-            <option {% if destination==dest %} selected {% endif %} value="{{ dest }}">{{ dest }}</option>
-            {% endfor %}
-        </select>
-        <br>
-
-        {% if (destination | default('')) == '' %}
-        <button type="submit" class="btn btn-primary" name="next_button" value="next_button">Næste</button>
-        <br>
-
-        {% elif (destination | default('')) == 'any' %}
-
-        <label for="packet">Packet pis</label>
-        <select class="form-select" aria-label="Default select example" name="packet">
-            <option value=""></option>
-            {% for packet in ['dscp', 'eq', 'fragments', 'gt', 'log', 'log-input', 'lt', 'neq', 'option', 'precedence',
-            'range', 'time-range', 'tos'] %}
-            <option value="{{ packet }}">{{ packet }}</option>
-            {% endfor %}
-
-        </select>
-
-        {% elif (destination | default('')) == 'host' %}
-
-        <label for="host_pis">Host</label>
-        <input type="text" name="host_pis" id="host_pis" class="form-control" value="">
-        {% elif (destination | default('')) != 'any' or (destination | default('')) != 'host' %}
-        <label for="port">Port (0-65535)</label>
-        <input type="text" name="port" id="port" class="form-control" value="">
-
-        {% endif %}-->
         {% else %}
         <label for="any_or_host">Any or host</label>
         <select class="form-select" aria-label="Default select example" name="any_or_host">
@@ -107,18 +76,19 @@
             }}" {% else %} "" {% endif %}>
 
         {% endif %}
-
+        <br>
         <div class="form-check">
             <input class="form-check-input" type="checkbox" value="ja" name="ja_eller_nej" id="ja_eller_nej">
             <label class="form-check-label" for="ja_eller_nej">
-              Skal 'permit ip any any' sættes ind til sidst?
+                Skal 'permit ip any any' sættes ind til sidst?
             </label>
         </div>
         <br>
         <label for="interface">Placer ACL på interface</label>
         <select name="interface" id="interface" class="form-select">
             {% for interface in session["interfaces"] %}
-                <option value="{{ interface['interface'] }}" {% if selected_interface == interface['interface'] %} selected {% endif %}>{{ interface['interface'] }}</option>
+            <option value="{{ interface['interface'] }}" {% if selected_interface==interface['interface'] %} selected {%
+                endif %}>{{ interface['interface'] }}</option>
             {% endfor %}
         </select>
         <br>
@@ -126,13 +96,13 @@
         <label for="in_or_out">In eller out</label>
         <select name="in_or_out" id="in_or_out" class="form-select">
             {% for option in ['in', 'out'] %}
-                <option value="{{ option }}" {% if selected_interface == option %} selected {% endif %}>{{ option }}</option>
+            <option value="{{ option }}" {% if selected_interface==option %} selected {% endif %}>{{ option }}</option>
             {% endfor %}
         </select>
         <br>
-        
 
-        <button type="submit" class="btn btn-primary" name="save_button" value="save_button">Save</button>
+
+        <button type="submit" class="btn btn-primary" name="save_button" value="save_button">Lav</button>
     </form>
 </div>
 

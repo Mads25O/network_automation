@@ -1,8 +1,14 @@
 {% extends "base.html" %}
 {% block title %}VLANS{% endblock %}
 {% block content %}
-<div class="container">
-    <h1>VLANS</h1>
+
+<div class="back-div">
+    <a class="back" href="{{ url_for('network.connect') }}">
+        << Tilbage</a>
+</div>
+
+<h1 class="fw-bold text-center">VLANS</h1>
+<div class="manage p-4 rounded">
     <h3>Lav et vlan</h3>
     <label for="packet">Hvilket VLAN?</label>
     <form action="" method="POST" class="pe-2">
@@ -15,7 +21,9 @@
         <input type="text" name="vlan_name" id="vlan_name" class="form-control">
         <button type="submit" class="btn btn-primary mt-2" name="create_button" value="create_button">Create</button>
     </form>
-    <br>
+</div>
+<br>
+<div class="manage p-4">
     <h3>Link VLANS</h3>
     <form action="" method="POST" clas="pe-2">
 
@@ -55,8 +63,8 @@
             </option>
             {% endfor %}
         </select>
+
         
-        <!--<input type="text" name="trunk_user_input" id="trunk_user_input" class="form-control mb-3">-->
         {% elif access_button %}
         <br>
 
@@ -67,10 +75,11 @@
             </option>
             {% endfor %}
         </select>
-        
+
         {% endif %}
         <br>
         <button type="submit" class="btn btn-primary mb-3" name="send_button" value="send_button">Send</button>
     </form>
 </div>
+
 {% endblock %}

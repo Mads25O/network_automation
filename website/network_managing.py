@@ -1,8 +1,8 @@
-from flask import Blueprint, render_template, request, flash, jsonify, redirect, url_for, session
+from flask import Blueprint, render_template, request, flash, redirect, url_for, session
 from flask_login import login_required, current_user
-from .models import Note, Networks, Routers
+from .models import Networks
+from .handles import handle_hostname, handle_vlan, handle_dhcp, handle_ntp_klient, handle_ntp_server, handle_port_security, handle_access_list
 from . import db
-import json
 from netmiko import ConnectHandler
 
 network = Blueprint('network', __name__, template_folder='templates/network_managing')
@@ -38,21 +38,6 @@ def create_network():
     flash('Network created!', category='success')
     return redirect(url_for('views.networks'))
     
-
-
-'''@network.route('/manage-network', methods=['GET', 'POST'])
-@login_required
-def manage_networks():
-    if request.method == 'POST':
-        
-        if request.form.get('connect_button'):
-            network_id = request.form['connect_button']
-            session["network_id"] = network_id
-            return redirect(url_for('network.connect'))
-        
-    return render_template('network_managing/manage_networks.html', user=current_user)'''
-
-
 @network.route('/edit-network', methods=['GET', 'POST'])
 @login_required
 def edit_network():
@@ -117,7 +102,10 @@ def connect():
         
 
     except:
-        flash('Can\'t connect.', category='error')
+        flash('Kan ikke forbinde', category='error')
+    
+    vlans = session["vlans"]
+    interfaces = session["interfaces"]
     
     if request.form.get('hostname_button'):
         return redirect(url_for('network.hostname'))
@@ -148,7 +136,8 @@ def connect():
         return redirect(url_for('network.port_security'))
 
     if request.form.get('gem_button'):
-        remote_execute('wr', session, Networks)
+        connection.send_command('write memory')
+
         flash('Gemt!', category='success')
         
     
@@ -167,27 +156,12 @@ def hostname():
     
     result = handle_hostname(request.method, request.form)
     if result == None:
-        # Tager alle form nøgler og pakker dem ud som en key value pair arg
         return render_template('network_managing/hostname.html', 
                             user=current_user, **request.form)
     
     remote_execute(result, session, Networks)
 
     return redirect(url_for('network.connect'))
-
-def handle_hostname(method, form):
-    if method != 'POST':
-        return None
-    
-    if not form.get('create_button'):
-        return None
-
-    command_exec = [
-        f'hostname {form.get("hostname")}',
-    ]
-    
-
-    return command_exec
 
 @network.route('/access-list', methods = ['GET', 'POST'])
 @login_required
@@ -201,12 +175,12 @@ def access_list():
 
     result = handle_access_list(request.method, request.form, session)
     if result == None:
-        # Tager alle form nøgler og pakker dem ud som en key value pair arg
+        
         return render_template('network_managing/access-list.html', 
                             user=current_user, **request.form, **session)
     
     remote_execute(result, session, Networks)
-    # redirect til noget
+    
 
     return redirect(url_for('network.connect'))
 
@@ -223,157 +197,41 @@ def vlans():
 
     return redirect(url_for('network.connect'))
 
-def handle_vlan(method, form, session):
-
-    if session.get("swp_mode", None):
-        swp_mode = ''
-
-
-    command_config = []
-
-    if method != 'POST':
-        return None
-    
-    if request.form.get('access_button'):
-        session["swp_mode"] = 'access'
-        return None
-            
-    if request.form.get('trunk_button'):
-        session["swp_mode"] = 'trunk'
-        return None
-    if request.form.get('create_button'):
-        return [f'vlan {form.get("vlan")}', f'name {form.get("vlan_name")}']
-    
-    command_config = [
-        f'interface {form.get("interfaces")}',
-        f'switchport mode {session.get("swp_mode")}'
-        ]
-
-    if session.get("swp_mode",'')  == 'trunk' and form.get("trunk_options", '') != '':
-        command_config.append(f'switchport trunk {form.get("trunk_options")} vlan {form.get("trunk_options_two")} {form.get("trunk_user_input")}')
-    
-    else:
-        command_config.append(f'switchport access vlan {form.get("vlan_switchport")}')
-    
-    return command_config
-
 @network.route('/dhcp', methods=['GET', 'POST'])
 @login_required
 def dhcp():
-    network_id = session["network_id"]
-    routers = Routers.query.filter_by(user_id=current_user.id, networks=network_id).all()
-
     result = handle_dhcp(request.method, request.form)
     if result == None:
-        # Tager alle form nøgler og pakker dem ud som en key value pair arg
+        
         return render_template('network_managing/dhcp.html', 
-                            user=current_user, routers=routers, **request.form)
+                            user=current_user, **request.form)
     remote_execute(result, session, Networks)
     return redirect(url_for('network.connect'))
-
-def handle_dhcp(method, form):
-    if method != 'POST':
-        return None
-    
-    if not form.get('create_button'):
-        return None
-
-    command_exec = [
-        f'ip dhcp excluded-address {form.get("exclude")}',
-        f'ip dhcp pool {form.get("dhcp_name")}',
-        f'network {form.get("netværks_adresse")}',
-        f'default-router {form.get("network")}'
-    ]
-    
-
-    return command_exec
-
-@network.route('/router', methods=['GET', 'POST'])
-@login_required
-def router():
-    
-    if request.method == 'POST':
-        router_name = request.form.get('router_name')
-        host = request.form.get('host')
-        username = request.form.get('username')
-        password = request.form.get('password')
-        networks = session["network_id"]
-        
-        
-
-        router = Routers.query.filter_by(user_id=current_user.id).count()
-        router_id = int(router) + 1
-        
-        new_router = Routers(router_id=router_id, router_name=router_name, host=host, 
-                               username=username, password=password, 
-                               user_id=current_user.id, networks=networks)
-        db.session.add(new_router)
-        db.session.commit()
-
-            
-
-        flash('Router tilføjet!', category='success')
-        return redirect(url_for('views.networks'))
-    
-    return render_template('network_managing/router.html', user=current_user)
 
 @network.route('/ntp-klient', methods=['GET', 'POST'])
 @login_required
-def ntp_klient():
-    network_id = session["network_id"]
-    routers = Routers.query.filter_by(user_id=current_user.id, networks=network_id).all()        
-
+def ntp_klient():  
     result = handle_ntp_klient(request.method, request.form)
     if result == None:
-        # Tager alle form nøgler og pakker dem ud som en key value pair arg
+        
         return render_template('network_managing/ntp_klient.html', 
-                            user=current_user, routers=routers, **request.form)
+                            user=current_user, **request.form)
     remote_execute(result, session, Networks)
 
     return redirect(url_for('network.connect'))
-
-
-def handle_ntp_klient(method, form):
-    if method != 'POST':
-        return None
-    
-    if not form.get('create_button'):
-        return None
-
-    return [
-        f'ntp server {form.get("server_ip")}'
-    ]
 
 @network.route('/ntp-server', methods=['GET', 'POST'])
 @login_required
 def ntp_server():
-    network_id = session["network_id"]
-    routers = Routers.query.filter_by(user_id=current_user.id, networks=network_id).all()
-
     result = handle_ntp_server(request.method, request.form)
     if result == None:
-        # Tager alle form nøgler og pakker dem ud som en key value pair arg
+        
         return render_template('network_managing/ntp_server.html', 
-                            user=current_user, routers=routers, **request.form)
+                            user=current_user, **request.form)
     
     remote_execute(result, session, Networks)
 
     return redirect(url_for('network.connect'))
-
-
-
-def handle_ntp_server(method, form):
-    if method != 'POST':
-        return None
-    
-    if not form.get('create_button'):
-        return None
-
-    return [
-        f'ntp master {form.get("stratum_nummer")}',
-        'ntp update-calendar',
-        f'ntp server {form.get("server_ip")}'
-    ]
 
 @network.route('/port-security', methods=['GET', 'POST'])
 @login_required
@@ -381,110 +239,13 @@ def port_security():
     
     result = handle_port_security(request.method, request.form)
     if result == None:
-        # Tager alle form nøgler og pakker dem ud som en key value pair arg
+        
         return render_template('network_managing/port_security.html', 
                             user=current_user, **request.form, **session)
     
     remote_execute(result, session, Networks)
 
     return redirect(url_for('network.connect'))
-
-def handle_port_security(method, form):
-    if method != 'POST':
-        return None
-    
-    if not form.get('create_button'):
-        return None
-
-    # Sikre man in the middle attack
-    return [
-        f'interface range {form.get("from_interface")} - {form.get("to_interface")}',
-        'switchport port-security',
-        'switchport port-security maximum 2',
-        'switchport port-security mac-address sticky',
-        'switchport port-security violation shutdown'
-        ]
-
-
-def handle_access_list(method, form, session):
-    if method != 'POST':
-        return None
-    
-    if not form.get('save_button'):
-        return None
-
-    if session.get("extended_access", False):
-        extended = 'true'
-    else:
-        extended = 'false'
-
-    command = ''
-    command_config = []
-
-
-
-            
-    ### Extended access liste lavet ###
-    if session.get('extended_access', False):
-        protocols = form.get("protocols")
-        if form.get("custom_protocols") != '':
-            protocols = form.get("custom_protocols")
-
-        command = f'ip access-list extended {form.get("access_list_name")}'
-        command_config.append(form.get("permit_or_deny"))
-        command_config.append(protocols)
-        command_config.append(form.get("host_name"))
-        command_config.append(form.get("wildcard"))
-        command_config.append(form.get("source"))
-        '''command_config.append(form.get("destination"))
-
-        if form.get("host_pis") != None:
-            command_config.append(f'{form.get("host_pis")}')
-            
-        
-        elif form.get("port") != None:
-            try:
-                port_int = int(form.get("port"))
-                command_config.append(str(port_int))
-                
-            except:
-                flash('Port kan kun være tal', category='error')
-                return None
-            
-        else:
-            command_config.append(f'{form.get("packet")}')'''
-    
-
-    ### Standard access liste laves ###
-    else:
-
-        command = f'ip access-list standard {form.get("access_list_name")}'
-
-        if form.get("permit_or_deny") == 'permit':
-            command_config.append(f'permit')
-        else:
-            command_config.append(f'deny')
-
-        # Source i HTML
-        if form.get("any_or_host") == 'any':
-        
-            command_config.append('any')
-
-        else:
-            command_config.append(f'host {form.get("hostname")}')
-    
-    command_exec = [command, ' '.join(command_config)]
-    if form.get('ja_eller_nej'):
-        command_exec.append('permit ip any any')
-    command_exec.append(f'int {form.get("interface")}')
-    command_exec.append(f'ip access-group {form.get("access_list_name")} {form.get("in_or_out")}')
-    
-    
-
-    return command_exec
-
-
-
     
     
 def remote_execute(command, session, networks):
@@ -503,8 +264,7 @@ def remote_execute(command, session, networks):
                                     device_type='cisco_ios')
         
         output = connection.send_config_set(command)
-        # connection.send_command('write memory')
-        print(output)
+        print(output)   
 
     except:
         flash('Blev ikke sendt til netværket, da der opstod problemer.', category='error')

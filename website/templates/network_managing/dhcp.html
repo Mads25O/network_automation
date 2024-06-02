@@ -1,40 +1,35 @@
 {% extends "base.html" %}
 {% block title %}DHCP{% endblock %}
 {% block content %}
-<div class="container">
-    <h1>DHCP</h1>
-    <h3>Opsæt en DHCP-pool</h3>
-    <form action="" method="POST" class="pe-2">
-        <label for="dhcp_name">DHCP Navn</label>
-        <input type="text" name="dhcp_name" id="dhcp_name" class="form-control">
 
-        <label for="netværks_adresse">Netværks adresse</label>
-        <input type="text" name="netværks_adresse" id="netværks_adresse" class="form-control">
-
-        <label for="subnetmaske">Subnetmaske</label>
-        <input type="text" name="subnetmaske" id="subnetmaske" class="form-control">
-
-        <label for="network">Defualt router</label>
-        <input type="text" name="network" id="network" class="form-control">
-        <!--<select class="form-select" aria-label="Default select example" name="network" id="network">
-            {% for network in user.networks %}
-            <option value="{{ network.network_name }}">{{ network.network_name + ' ' + network.host }}</option>
-            {% endfor %}
-        </select>-->
-
-        <!--<label for="dns_server">DNS server</label>
-        <input type="text" name="dns_server" id="dns_server" class="form-control">
-
-        <label for="domain">Domain name</label>
-        <input type="text" name="domain" id="domian" class="form-control">
-
-        <label for="lease">Lease (Dage)</label>
-        <input type="text" name="lease" id="lease" class="form-control">-->
-
-        <label for="exclude">Exclude address</label>
-        <input type="text" name="exclude" id="exclude" class="form-control">
-
-        <button type="submit" class="btn btn-primary mt-2" name="create_button" value="create_button">Create</button>
-    </form>
+<div class="back-div">
+    <a class="back" href="{{ url_for('network.connect') }}"><< Tilbage</a>
 </div>
+
+<h1 class="fw-bold text-center">DHCP</h1>
+<form action="" method="POST" class="pe-2">
+    <h3>Lav DHCP pool</h3>
+    <label for="dhcp_name">DHCP Navn</label>
+    <input type="text" name="dhcp_name" id="dhcp_name" class="form-control">
+    <br>
+
+    <label for="netværks_adresse">Netværks adresse</label>
+    <input type="text" name="netværks_adresse" id="netværks_adresse" class="form-control">
+    <br>
+
+    <label for="subnetmaske">Subnetmaske</label>
+    <input type="text" name="subnetmaske" id="subnetmaske" class="form-control">
+    <br>
+
+    <label for="network">Defualt router</label>
+    <input type="text" name="network" id="network" class="form-control">
+    <br>
+
+    <label for="exclude">Exclude address</label>
+    <input type="text" name="exclude" id="exclude" class="form-control">
+    <br>
+
+    <button type="submit" class="btn btn-primary mt-2" name="create_button" value="create_button">Lav</button>
+</form>
+
 {% endblock %}
